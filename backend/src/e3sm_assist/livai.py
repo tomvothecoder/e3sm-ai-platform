@@ -129,14 +129,16 @@ class LivAIEvidenceGenerator:
 def build_livai_messages(question: str, evidence: list[Evidence]) -> list[dict[str, str]]:
     """Build a source-constrained prompt for LivAI."""
 
-    evidence_text = _truncate_prompt_context("\n\n".join(
-        f"Source {index}: {item.source.source_id}\n"
-        f"Title: {item.source.title}\n"
-        f"Section: {item.source.section}\n"
-        f"Provenance: {item.source.provenance}\n"
-        f"Text: {item.text}"
-        for index, item in enumerate(evidence, start=1)
-    ))
+    evidence_text = _truncate_prompt_context(
+        "\n\n".join(
+            f"Source {index}: {item.source.source_id}\n"
+            f"Title: {item.source.title}\n"
+            f"Section: {item.source.section}\n"
+            f"Provenance: {item.source.provenance}\n"
+            f"Text: {item.text}"
+            for index, item in enumerate(evidence, start=1)
+        )
+    )
     return [
         {
             "role": "system",

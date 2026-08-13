@@ -21,7 +21,9 @@ jobs:
       - run: uv sync --all-packages --all-groups
       - run: uv run --all-packages pytest backend/tests
       - run: uv run --all-packages ruff check backend
+      - run: uv run --all-packages ruff format --check --force-exclude backend
       - run: uv run --all-packages mypy backend
+      - run: uv run --all-packages ty check backend
 
   evaluation:
     name: Evaluation checks
@@ -36,7 +38,22 @@ jobs:
       - run: uv sync --all-packages --all-groups
       - run: E3SM_ASSIST_EVALUATOR=e3sm_assist.evaluation_adapter:evaluate uv run --all-packages pytest evaluation
       - run: uv run --all-packages ruff check evaluation
+      - run: uv run --all-packages ruff format --check --force-exclude evaluation
       - run: uv run --all-packages mypy evaluation
+      - run: uv run --all-packages ty check evaluation
+
+  pre-commit:
+    name: Pre-commit checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --all-packages --all-groups
+      - run: SKIP=ruff-check,ruff-format,ty uv run --all-packages pre-commit run --all-files
 
   frontend:
     name: Frontend checks

@@ -1,6 +1,5 @@
-from fastapi.testclient import TestClient
-
 from e3sm_assist.app import app
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
 

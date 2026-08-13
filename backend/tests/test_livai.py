@@ -2,19 +2,6 @@ import json
 from collections.abc import Iterator
 
 import pytest
-from pydantic_ai import Agent
-from pydantic_ai.messages import (
-    ModelMessage,
-    ModelRequest,
-    ModelResponse,
-    SystemPromptPart,
-    TextPart,
-    UserPromptPart,
-)
-from pydantic_ai.models.function import AgentInfo, FunctionModel
-from pydantic_ai.models.openai import OpenAIChatModel
-from pydantic_ai.providers.openai import OpenAIProvider
-
 from e3sm_assist.app import AssistService
 from e3sm_assist.livai import (
     MAX_EVIDENCE_PROMPT_CHARS,
@@ -32,6 +19,18 @@ from e3sm_assist.settings import (
     Settings,
     load_settings,
 )
+from pydantic_ai import Agent
+from pydantic_ai.messages import (
+    ModelMessage,
+    ModelRequest,
+    ModelResponse,
+    SystemPromptPart,
+    TextPart,
+    UserPromptPart,
+)
+from pydantic_ai.models.function import AgentInfo, FunctionModel
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.providers.openai import OpenAIProvider
 
 
 class FakeChatClient:

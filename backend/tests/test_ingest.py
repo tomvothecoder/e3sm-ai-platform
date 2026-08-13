@@ -1,7 +1,6 @@
-from pydantic import HttpUrl, TypeAdapter
-
 from e3sm_assist.ingest import chunk_corpus, chunk_entry, load_corpus
 from e3sm_assist.models import CorpusEntry
+from pydantic import HttpUrl, TypeAdapter
 
 _HTTP_URL_ADAPTER: TypeAdapter[HttpUrl] = TypeAdapter(HttpUrl)
 

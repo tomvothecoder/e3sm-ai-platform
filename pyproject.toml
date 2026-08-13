@@ -12,6 +12,13 @@ package = false
 [tool.uv.workspace]
 members = ["backend", "evaluation"]
 
+[dependency-groups]
+dev = [
+  "pre-commit>=4.0.0",
+  "ruff>=0.16.3",
+  "ty>=0.0.71",
+]
+
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = ["backend/tests", "evaluation"]
@@ -19,6 +26,14 @@ testpaths = ["backend/tests", "evaluation"]
 [tool.ruff]
 target-version = "py313"
 line-length = 100
+extend-exclude = ["evaluation/README.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ty.src]
+include = ["backend", "evaluation"]
 
 [tool.mypy]
 python_version = "3.13"
