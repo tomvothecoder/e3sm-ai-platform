@@ -6,9 +6,15 @@ import math
 import re
 from collections import Counter
 from collections.abc import Iterable, Sequence
+from hashlib import sha256
+
+from llama_index.core import VectorStoreIndex
+from llama_index.core.embeddings import BaseEmbedding
+from llama_index.core.schema import MetadataMode, NodeWithScore, TextNode
+from pydantic import PrivateAttr
 
 from e3sm_assist.interfaces import Embedder, EmbeddingVector
-from e3sm_assist.models import DocumentChunk, Evidence
+from e3sm_assist.models import DocumentChunk, Evidence, SourceMetadata
 
 TOKEN_RE = re.compile(r"[a-z0-9][a-z0-9_+.-]*")
 TOKEN_BOUNDARY_TEMPLATE = r"(?<![a-z0-9_+.-]){phrase}(?![a-z0-9_+.-])"
@@ -75,6 +81,52 @@ class LexicalEmbedder(Embedder):
         return {term: count / total for term, count in sorted(counts.items())}
 
 
+class LlamaIndexLexicalEmbedding(BaseEmbedding):
+    """Fixed-size LlamaIndex embedding derived from the local lexical embedder."""
+
+    dimensions: int = 256
+    _lexical_embedder: LexicalEmbedder = PrivateAttr(default_factory=LexicalEmbedder)
+
+    def _embed(self, text: str) -> list[float]:
+        vector = [0.0] * self.dimensions
+        for term, weight in self._lexical_embedder.embed(text).items():
+            digest = sha256(term.encode("utf-8")).digest()
+            index = int.from_bytes(digest[:8], byteorder="big") % self.dimensions
+            vector[index] += weight
+        return vector
+
+    def _get_query_embedding(self, query: str) -> list[float]:
+        return self._embed(query)
+
+    def _get_text_embedding(self, text: str) -> list[float]:
+        return self._embed(text)
+
+    async def _aget_query_embedding(self, query: str) -> list[float]:
+        return self._get_query_embedding(query)
+
+
+def document_chunk_to_text_node(chunk: DocumentChunk) -> TextNode:
+    """Convert a curated chunk to a node while retaining citation-grade provenance."""
+
+    metadata = {
+        "chunk_id": chunk.chunk_id,
+        "source_id": chunk.source.source_id,
+        "title": chunk.source.title,
+        "url": str(chunk.source.url),
+        "section": chunk.source.section,
+        "component": chunk.source.component,
+        "version": chunk.source.version,
+        "authority": chunk.source.authority,
+        "provenance": chunk.source.provenance,
+    }
+    return TextNode(
+        id_=chunk.chunk_id,
+        text=chunk.text,
+        metadata=metadata,
+        excluded_embed_metadata_keys=list(metadata),
+    )
+
+
 def cosine_similarity(left: EmbeddingVector, right: EmbeddingVector) -> float:
     """Compute cosine similarity over sparse lexical vectors."""
 
@@ -86,6 +138,83 @@ def cosine_similarity(left: EmbeddingVector, right: EmbeddingVector) -> float:
     if left_norm == 0.0 or right_norm == 0.0:
         return 0.0
     return dot / (left_norm * right_norm)
+
+
+class LlamaIndexVectorStore:
+    """Optional in-memory LlamaIndex retriever with deterministic lexical embeddings."""
+
+    def __init__(self, embedder: LlamaIndexLexicalEmbedding | None = None) -> None:
+        self._embedder = embedder or LlamaIndexLexicalEmbedding()
+        self._chunks: list[DocumentChunk] = []
+        self._index: VectorStoreIndex | None = None
+
+    def add(self, chunks: Iterable[DocumentChunk]) -> None:
+        """Index chunks as LlamaIndex nodes, preserving all source metadata."""
+
+        new_chunks = list(chunks)
+        if not new_chunks:
+            return
+        nodes = [document_chunk_to_text_node(chunk) for chunk in new_chunks]
+        if self._index is None:
+            self._index = VectorStoreIndex(nodes=nodes, embed_model=self._embedder)
+        else:
+            self._index.insert_nodes(nodes)
+        self._chunks.extend(new_chunks)
+
+    def search(self, query: str, top_k: int) -> list[Evidence]:
+        """Retrieve through LlamaIndex, then apply stable evidence ordering."""
+
+        if top_k <= 0 or self._index is None:
+            return []
+        query_terms = InMemoryVectorStore._query_terms(query)
+        results = self._index.as_retriever(similarity_top_k=len(self._chunks)).retrieve(query)
+        evidence = [self._node_to_evidence(item, query_terms) for item in results]
+        ranked = sorted(evidence, key=lambda item: (-item.score, item.chunk_id))
+        return [item for item in ranked if item.score > 0.0][:top_k]
+
+    def accepted(self, query: str, candidates: Sequence[Evidence], top_k: int) -> list[Evidence]:
+        """Apply the same curated-evidence policy as the default in-memory store."""
+
+        return InMemoryVectorStore.apply_acceptance_policy(query, candidates, top_k)
+
+    @staticmethod
+    def _node_to_evidence(item: NodeWithScore, query_terms: set[str]) -> Evidence:
+        node = item.node
+        metadata = node.metadata
+        source = SourceMetadata.model_validate(
+            {
+                "source_id": metadata["source_id"],
+                "title": metadata["title"],
+                "url": metadata["url"],
+                "section": metadata["section"],
+                "component": metadata["component"],
+                "version": metadata["version"],
+                "authority": metadata["authority"],
+                "provenance": metadata["provenance"],
+            }
+        )
+        text = node.get_content(metadata_mode=MetadataMode.NONE)
+        searchable = " ".join(
+            [
+                source.source_id.replace(":", " ").replace("-", " "),
+                source.title,
+                source.section,
+                source.component,
+                text,
+            ]
+        ).lower()
+        matched_terms = sorted(
+            term for term in query_terms if contains_token_phrase(searchable, term)
+        )
+        coverage = len(matched_terms) / len(query_terms) if query_terms else 0.0
+        return Evidence(
+            chunk_id=str(metadata["chunk_id"]),
+            text=text,
+            score=round(float(item.score or 0.0), 6),
+            source=source,
+            matched_terms=matched_terms,
+            coverage=round(coverage, 6),
+        )
 
 
 class InMemoryVectorStore:
@@ -114,7 +243,15 @@ class InMemoryVectorStore:
     def accepted(self, query: str, candidates: Sequence[Evidence], top_k: int) -> list[Evidence]:
         """Filter retrieved candidates to meaningful curated evidence for generation."""
 
-        if self._unsupported_overlap(query):
+        return self.apply_acceptance_policy(query, candidates, top_k)
+
+    @staticmethod
+    def apply_acceptance_policy(
+        query: str, candidates: Sequence[Evidence], top_k: int
+    ) -> list[Evidence]:
+        """Filter retrieved candidates to meaningful curated evidence for generation."""
+
+        if InMemoryVectorStore._unsupported_overlap(query):
             return []
         accepted = [
             evidence

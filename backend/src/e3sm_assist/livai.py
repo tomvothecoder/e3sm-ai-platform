@@ -5,7 +5,9 @@ from __future__ import annotations
 from typing import Protocol
 from urllib.parse import urlparse
 
-import httpx
+from pydantic_ai import Agent
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.providers.openai import OpenAIProvider
 
 from e3sm_assist.generation import generate_response
 from e3sm_assist.models import Evidence, QueryResponse, RouteName
@@ -13,6 +15,11 @@ from e3sm_assist.settings import Settings
 
 # Deterministic context bound so prompts cannot grow without limit as corpus/retrieval expands.
 MAX_EVIDENCE_PROMPT_CHARS = 8_000
+SYSTEM_PROMPT = (
+    "You are E3SM-ASSIST. Answer only from the provided E3SM evidence. "
+    "Do not add claims beyond the sources. If the evidence is insufficient, say so. "
+    "Do not invent citations; the server attaches citations separately."
+)
 
 
 class LivAIProviderError(RuntimeError):
@@ -30,59 +37,56 @@ class ChatClient(Protocol):
         """Return assistant text for chat messages."""
 
 
+class AgentRunResult(Protocol):
+    """The portion of a Pydantic AI run result used by this integration."""
+
+    @property
+    def output(self) -> str:
+        """Return the validated text output."""
+
+
+class SyncAgent(Protocol):
+    """Injectable synchronous Pydantic AI agent boundary."""
+
+    def run_sync(self, user_prompt: str) -> AgentRunResult:
+        """Run the agent synchronously."""
+
+
 class LivAIChatClient:
-    """Minimal OpenAI-compatible LivAI chat client using httpx."""
+    """Pydantic AI client for LivAI's OpenAI-compatible chat API."""
 
     def __init__(
         self,
         api_key: str,
         model: str,
         base_url: str,
-        timeout_seconds: float = 30.0,
-        http_client: httpx.Client | None = None,
+        agent: SyncAgent | None = None,
     ) -> None:
-        self.api_key = api_key
-        self.model = model
         self.base_url = base_url
         self._validate_https_base_url()
-        self._client = http_client or httpx.Client(timeout=timeout_seconds)
-        self._owns_client = http_client is None
-
-    def close(self) -> None:
-        """Close the owned httpx client when the application lifecycle ends."""
-
-        if self._owns_client:
-            self._client.close()
+        if agent is None:
+            provider = OpenAIProvider(base_url=f"{base_url.rstrip('/')}/v1", api_key=api_key)
+            chat_model = OpenAIChatModel(model, provider=provider)
+            agent = Agent(
+                chat_model,
+                system_prompt=SYSTEM_PROMPT,
+                output_type=str,
+                model_settings={"temperature": 0},
+            )
+        self._agent = agent
 
     def complete(self, messages: list[dict[str, str]]) -> str:
         self._validate_https_base_url()
-        endpoint = self.base_url.rstrip("/") + "/v1/chat/completions"
-        payload: dict[str, object] = {
-            "model": self.model,
-            "messages": messages,
-            "temperature": 0,
-        }
-        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+        user_prompt = "\n\n".join(
+            message["content"] for message in messages if message.get("role") == "user"
+        )
         try:
-            response = self._client.post(endpoint, json=payload, headers=headers)
-            response.raise_for_status()
-            data = response.json()
-        except httpx.HTTPStatusError as exc:
-            raise LivAIProviderError(f"http_status_{exc.response.status_code}") from exc
-        except httpx.HTTPError as exc:
-            raise LivAIProviderError("http_transport_error") from exc
-        except ValueError as exc:
-            raise LivAIProviderError("invalid_json") from exc
-        choices = data.get("choices")
-        if not isinstance(choices, list) or not choices:
-            raise LivAIProviderError("missing_choices")
-        message = choices[0].get("message")
-        if not isinstance(message, dict):
-            raise LivAIProviderError("missing_message")
-        content = message.get("content")
-        if not isinstance(content, str) or not content.strip():
+            output = self._agent.run_sync(user_prompt).output
+        except Exception as exc:
+            raise LivAIProviderError("agent_run_error") from exc
+        if not isinstance(output, str) or not output.strip():
             raise LivAIProviderError("empty_content")
-        return content.strip()
+        return output.strip()
 
     def _validate_https_base_url(self) -> None:
         parsed = urlparse(self.base_url)
@@ -136,11 +140,7 @@ def build_livai_messages(question: str, evidence: list[Evidence]) -> list[dict[s
     return [
         {
             "role": "system",
-            "content": (
-                "You are E3SM-ASSIST. Answer only from the provided E3SM evidence. "
-                "Do not add claims beyond the sources. If the evidence is insufficient, say so. "
-                "Do not invent citations; the server attaches citations separately."
-            ),
+            "content": SYSTEM_PROMPT,
         },
         {
             "role": "user",
