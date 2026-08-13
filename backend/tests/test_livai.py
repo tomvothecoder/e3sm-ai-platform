@@ -1,12 +1,24 @@
 import json
 from collections.abc import Iterator
 
-import httpx
 import pytest
+from pydantic_ai import Agent
+from pydantic_ai.messages import (
+    ModelMessage,
+    ModelRequest,
+    ModelResponse,
+    SystemPromptPart,
+    TextPart,
+    UserPromptPart,
+)
+from pydantic_ai.models.function import AgentInfo, FunctionModel
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.providers.openai import OpenAIProvider
 
 from e3sm_assist.app import AssistService
 from e3sm_assist.livai import (
     MAX_EVIDENCE_PROMPT_CHARS,
+    SYSTEM_PROMPT,
     LivAIChatClient,
     LivAIEvidenceGenerator,
     LivAIProviderError,
@@ -121,87 +133,98 @@ def test_livai_prompt_context_is_deterministically_bounded() -> None:
     assert "Evidence context truncated deterministically" in user_content
 
 
-def test_livai_http_client_sends_expected_url_header_and_payload() -> None:
-    captured: dict[str, object] = {}
+def _function_agent(response: str) -> Agent[None, str]:
+    def complete(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        return ModelResponse(parts=[TextPart(content=response)])
 
-    def handler(request: httpx.Request) -> httpx.Response:
-        captured["url"] = str(request.url)
-        captured["authorization"] = request.headers["Authorization"]
-        captured["payload"] = json.loads(request.content.decode())
-        return httpx.Response(
-            200,
-            json={"choices": [{"message": {"content": "answer"}}]},
-        )
+    return Agent(FunctionModel(complete), output_type=str)
 
-    http_client = httpx.Client(transport=httpx.MockTransport(handler))
+
+def test_livai_client_uses_injected_pydantic_ai_agent_without_network() -> None:
     client = LivAIChatClient(
         api_key="secret-key",
         model="gpt-5.5",
         base_url="https://livai-api.llnl.gov/",
-        http_client=http_client,
+        agent=_function_agent("answer"),
     )
 
     assert client.complete([{"role": "user", "content": "hello"}]) == "answer"
-    assert captured["url"] == "https://livai-api.llnl.gov/v1/chat/completions"
-    assert captured["authorization"] == "Bearer secret-key"
-    payload = captured["payload"]
-    assert isinstance(payload, dict)
-    assert payload["model"] == "gpt-5.5"
-    assert payload["messages"] == [{"role": "user", "content": "hello"}]
-    assert payload["temperature"] == 0
+
+
+def test_livai_default_agent_configuration_requires_no_network() -> None:
+    client = LivAIChatClient(
+        api_key="secret-key",
+        model="gpt-5.5",
+        base_url="https://livai-api.llnl.gov/",
+    )
+
+    assert isinstance(client._agent, Agent)
+    assert isinstance(client._agent.model, OpenAIChatModel)
+    assert client._agent.model.model_name == "gpt-5.5"
+    assert isinstance(client._agent.model.provider, OpenAIProvider)
+    assert str(client._agent.model.provider.base_url) == "https://livai-api.llnl.gov/v1/"
+    assert client._agent.model_settings == {"temperature": 0}
+
+
+def test_livai_invocation_keeps_system_prompt_separate_from_evidence() -> None:
+    captured: list[ModelMessage] = []
+
+    def complete(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        captured.extend(messages)
+        return ModelResponse(parts=[TextPart(content="answer")])
+
+    client = LivAIChatClient(
+        api_key="secret-key",
+        model="gpt-5.5",
+        base_url="https://livai-api.llnl.gov/",
+        agent=Agent(FunctionModel(complete), system_prompt=SYSTEM_PROMPT, output_type=str),
+    )
+    messages = build_livai_messages("How choose compsets?", _evidence())
+
+    assert client.complete(messages) == "answer"
+    request = captured[0]
+    assert isinstance(request, ModelRequest)
+    system_part, user_part = request.parts[:2]
+    assert isinstance(system_part, SystemPromptPart)
+    assert isinstance(user_part, UserPromptPart)
+    assert system_part.content == SYSTEM_PROMPT
+    assert user_part.content == messages[1]["content"]
+    assert SYSTEM_PROMPT not in user_part.content
 
 
 def test_livai_rejects_non_https_base_url_before_sending_credential() -> None:
-    called = False
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        nonlocal called
-        called = True
-        return httpx.Response(200, json={"choices": [{"message": {"content": "answer"}}]})
-
     with pytest.raises(LivAIProviderError, match="invalid_https_base_url"):
         LivAIChatClient(
             api_key="secret-key",
             model="gpt-5.5",
             base_url="http://livai-api.llnl.gov/",
-            http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+            agent=_function_agent("answer"),
         )
 
-    assert called is False
 
-
-@pytest.mark.parametrize(
-    ("response", "expected_code"),
-    [
-        (httpx.Response(500, json={"error": "nope"}), "http_status_500"),
-        (httpx.Response(200, json={}), "missing_choices"),
-        (httpx.Response(200, json={"choices": []}), "missing_choices"),
-        (httpx.Response(200, json={"choices": [{"message": {}}]}), "empty_content"),
-    ],
-)
-def test_livai_response_validation_error_mapping(
-    response: httpx.Response,
-    expected_code: str,
-) -> None:
-    def handler(request: httpx.Request) -> httpx.Response:
-        return response
+def test_livai_agent_failure_is_sanitized() -> None:
+    def fail(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        raise RuntimeError("secret-key https://livai-api.llnl.gov/")
 
     client = LivAIChatClient(
         api_key="secret-key",
         model="gpt-5.5",
         base_url="https://livai-api.llnl.gov/",
-        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+        agent=Agent(FunctionModel(fail), output_type=str),
     )
 
-    with pytest.raises(LivAIProviderError) as exc_info:
+    with pytest.raises(LivAIProviderError, match="agent_run_error"):
         client.complete([{"role": "user", "content": "hello"}])
-
-    assert exc_info.value.code == expected_code
 
 
 def test_livai_generator_preserves_server_citations_and_evidence() -> None:
-    fake_client = FakeChatClient("Compsets select component configurations from the evidence.")
-    generator = LivAIEvidenceGenerator(fake_client)
+    client = LivAIChatClient(
+        api_key="test-key",
+        model="test-model",
+        base_url="https://livai-api.llnl.gov/",
+        agent=_function_agent("Compsets select component configurations from the evidence."),
+    )
+    generator = LivAIEvidenceGenerator(client)
 
     response = generator("How choose compsets?", RouteName.CURATED_RAG, _evidence(), True, "test")
 
@@ -210,7 +233,6 @@ def test_livai_generator_preserves_server_citations_and_evidence() -> None:
     assert response.retrieved_evidence[0].source_id == "user-guide:compsets"
     assert response.evidence[0].chunk_id == "user-guide:compsets#chunk-1"
     assert response.debug["livai_used"] is True
-    assert fake_client.messages is not None
 
 
 def test_livai_failure_falls_back_to_deterministic_cited_answer() -> None:
