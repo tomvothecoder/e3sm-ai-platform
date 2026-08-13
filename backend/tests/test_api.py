@@ -1,6 +1,8 @@
 from fastapi.testclient import TestClient
+from pytest import LogCaptureFixture
 
 from e3sm_assist.app import app
+from e3sm_assist.observability import JsonFormatter
 
 client = TestClient(app)
 
@@ -67,11 +69,38 @@ def test_cors_allows_localhost_frontend_origin() -> None:
         headers={
             "Origin": "http://localhost:5173",
             "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "traceparent,tracestate",
         },
     )
 
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "http://localhost:5173"
+    assert "traceparent" in response.headers["access-control-allow-headers"]
+    assert "tracestate" in response.headers["access-control-allow-headers"]
+    actual_response = client.get("/health", headers={"Origin": "http://localhost:5173"})
+
+    assert actual_response.headers["access-control-expose-headers"] == "X-Request-ID"
+
+
+def test_request_id_and_trace_context_are_correlated_without_question_in_logs(
+    caplog: LogCaptureFixture,
+) -> None:
+    question = "private prompt must not be logged"
+    response = client.post(
+        "/query",
+        json={"question": question},
+        headers={"traceparent": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"},
+    )
+
+    assert response.status_code == 200
+    request_id = response.headers["x-request-id"]
+    assert len(request_id) == 32
+    record = next(record for record in caplog.records if record.message == "http.request.complete")
+    captured = JsonFormatter().format(record)
+    assert "http.request.complete" in captured
+    assert request_id in captured
+    assert "0123456789abcdef0123456789abcdef" in captured
+    assert question not in captured
 
 
 def test_query_unknown_topic_is_insufficient_evidence() -> None:

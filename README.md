@@ -53,6 +53,8 @@ a runtime web request.
 - `backend/` contains the FastAPI `POST /query` vertical slice and independently
   testable ingestion, retrieval, routing, generation, and integration interfaces.
 - `evaluation/` contains deterministic question fixtures and scoring checks.
+- The [observability guide](docs/dev/observability.md) describes the current
+  baseline and future telemetry, audit, and RAG reproducibility requirements.
 - This root `pyproject.toml` defines a uv workspace over the backend and evaluation
   Python projects; their dependency declarations remain owned by those projects.
 
