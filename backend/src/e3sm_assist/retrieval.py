@@ -60,13 +60,11 @@ UNSUPPORTED_INTENT_PHRASES = {
 
 def tokenize(text: str) -> list[str]:
     """Normalize text into deterministic lexical tokens."""
-
     return [token for token in TOKEN_RE.findall(text.lower()) if token not in STOPWORDS]
 
 
 def contains_token_phrase(text: str, phrase: str) -> bool:
     """Return true when phrase appears on token boundaries, not as a substring."""
-
     escaped = re.escape(phrase.lower()).replace(r"\ ", r"\s+")
     pattern = TOKEN_BOUNDARY_TEMPLATE.format(phrase=escaped)
     return re.search(pattern, text.lower()) is not None
@@ -76,6 +74,7 @@ class LexicalEmbedder(Embedder):
     """Small deterministic term-frequency embedder for tests and local development."""
 
     def embed(self, text: str) -> EmbeddingVector:
+        """Embed text as a normalized lexical term-frequency vector."""
         counts = Counter(tokenize(text))
         total = sum(counts.values()) or 1
         return {term: count / total for term, count in sorted(counts.items())}
@@ -107,7 +106,6 @@ class LlamaIndexLexicalEmbedding(BaseEmbedding):
 
 def document_chunk_to_text_node(chunk: DocumentChunk) -> TextNode:
     """Convert a curated chunk to a node while retaining citation-grade provenance."""
-
     metadata = {
         "chunk_id": chunk.chunk_id,
         "source_id": chunk.source.source_id,
@@ -129,7 +127,6 @@ def document_chunk_to_text_node(chunk: DocumentChunk) -> TextNode:
 
 def cosine_similarity(left: EmbeddingVector, right: EmbeddingVector) -> float:
     """Compute cosine similarity over sparse lexical vectors."""
-
     if not left or not right:
         return 0.0
     dot = sum(weight * right.get(term, 0.0) for term, weight in left.items())
@@ -150,7 +147,6 @@ class LlamaIndexVectorStore:
 
     def add(self, chunks: Iterable[DocumentChunk]) -> None:
         """Index chunks as LlamaIndex nodes, preserving all source metadata."""
-
         new_chunks = list(chunks)
         if not new_chunks:
             return
@@ -163,7 +159,6 @@ class LlamaIndexVectorStore:
 
     def search(self, query: str, top_k: int) -> list[Evidence]:
         """Retrieve through LlamaIndex, then apply stable evidence ordering."""
-
         if top_k <= 0 or self._index is None:
             return []
         query_terms = InMemoryVectorStore._query_terms(query)
@@ -174,7 +169,6 @@ class LlamaIndexVectorStore:
 
     def accepted(self, query: str, candidates: Sequence[Evidence], top_k: int) -> list[Evidence]:
         """Apply the same curated-evidence policy as the default in-memory store."""
-
         return InMemoryVectorStore.apply_acceptance_policy(query, candidates, top_k)
 
     @staticmethod
@@ -225,10 +219,12 @@ class InMemoryVectorStore:
         self._records: list[tuple[DocumentChunk, EmbeddingVector]] = []
 
     def add(self, chunks: Iterable[DocumentChunk]) -> None:
+        """Add chunks and their lexical vectors to the store."""
         for chunk in chunks:
             self._records.append((chunk, self._embedder.embed(chunk.text)))
 
     def search(self, query: str, top_k: int) -> list[Evidence]:
+        """Return the highest-scoring evidence for a query."""
         query_vector = self._embedder.embed(query)
         query_terms = self._query_terms(query)
         ranked = sorted(
@@ -242,7 +238,6 @@ class InMemoryVectorStore:
 
     def accepted(self, query: str, candidates: Sequence[Evidence], top_k: int) -> list[Evidence]:
         """Filter retrieved candidates to meaningful curated evidence for generation."""
-
         return self.apply_acceptance_policy(query, candidates, top_k)
 
     @staticmethod
@@ -250,7 +245,6 @@ class InMemoryVectorStore:
         query: str, candidates: Sequence[Evidence], top_k: int
     ) -> list[Evidence]:
         """Filter retrieved candidates to meaningful curated evidence for generation."""
-
         if InMemoryVectorStore._unsupported_overlap(query):
             return []
         accepted = [
@@ -356,7 +350,6 @@ class InMemoryVectorStore:
     @staticmethod
     def _exact_phrase_bonus(query_terms: set[str], chunk: DocumentChunk) -> float:
         """Small deterministic boost for exact token-boundary documentation phrases."""
-
         chunk_text = chunk.text.lower()
         source_text = f"{chunk.source.source_id} {chunk.source.title}".lower()
         bonus = 0.0

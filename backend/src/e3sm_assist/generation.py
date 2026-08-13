@@ -14,7 +14,6 @@ from e3sm_assist.models import (
 
 def citations_from_evidence(evidence: list[Evidence]) -> list[Citation]:
     """Create one citation per unique source, preserving evidence rank."""
-
     seen: set[str] = set()
     citations: list[Citation] = []
     for item in evidence:
@@ -27,7 +26,6 @@ def citations_from_evidence(evidence: list[Evidence]) -> list[Citation]:
 
 def flat_evidence_from_evidence(evidence: list[Evidence]) -> list[RetrievedEvidence]:
     """Flatten accepted evidence while preserving citation/source association."""
-
     return [
         RetrievedEvidence(
             chunk_id=item.chunk_id,
@@ -62,7 +60,6 @@ def generate_response(
     reason: str,
 ) -> QueryResponse:
     """Generate a deterministic answer using only retrieved evidence or a gap message."""
-
     if route is RouteName.CURATED_RAG and evidence:
         citations = citations_from_evidence(evidence)
         flat_evidence = flat_evidence_from_evidence(evidence) if include_evidence else []

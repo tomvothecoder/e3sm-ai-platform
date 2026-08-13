@@ -76,6 +76,7 @@ class LivAIChatClient:
         self._agent = agent
 
     def complete(self, messages: list[dict[str, str]]) -> str:
+        """Return validated LivAI output for the supplied chat messages."""
         self._validate_https_base_url()
         user_prompt = "\n\n".join(
             message["content"] for message in messages if message.get("role") == "user"
@@ -108,6 +109,7 @@ class LivAIEvidenceGenerator:
         include_evidence: bool,
         reason: str,
     ) -> QueryResponse:
+        """Generate a curated response with LivAI or the deterministic fallback."""
         if route is not RouteName.CURATED_RAG or not evidence:
             return generate_response(question, route, evidence, include_evidence, reason)
 
@@ -128,15 +130,16 @@ class LivAIEvidenceGenerator:
 
 def build_livai_messages(question: str, evidence: list[Evidence]) -> list[dict[str, str]]:
     """Build a source-constrained prompt for LivAI."""
-
-    evidence_text = _truncate_prompt_context("\n\n".join(
-        f"Source {index}: {item.source.source_id}\n"
-        f"Title: {item.source.title}\n"
-        f"Section: {item.source.section}\n"
-        f"Provenance: {item.source.provenance}\n"
-        f"Text: {item.text}"
-        for index, item in enumerate(evidence, start=1)
-    ))
+    evidence_text = _truncate_prompt_context(
+        "\n\n".join(
+            f"Source {index}: {item.source.source_id}\n"
+            f"Title: {item.source.title}\n"
+            f"Section: {item.source.section}\n"
+            f"Provenance: {item.source.provenance}\n"
+            f"Text: {item.text}"
+            for index, item in enumerate(evidence, start=1)
+        )
+    )
     return [
         {
             "role": "system",
@@ -151,7 +154,6 @@ def build_livai_messages(question: str, evidence: list[Evidence]) -> list[dict[s
 
 def build_generator(settings: Settings) -> LivAIEvidenceGenerator | None:
     """Return LivAI generator only when explicitly enabled and configured."""
-
     if not settings.livai_enabled:
         return None
     assert settings.livai_api_key is not None

@@ -16,7 +16,6 @@ def _service() -> AssistService:
 
 def evaluate(question: str) -> dict[str, Any]:
     """Return the stable E3SM_ASSIST_EVALUATOR mapping contract."""
-
     response = _service().query(QueryRequest(question=question, top_k=6, include_evidence=True))
     evidence = [item.model_dump(mode="json") for item in response.retrieved_evidence]
     return {

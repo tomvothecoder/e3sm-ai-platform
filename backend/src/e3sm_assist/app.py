@@ -19,6 +19,8 @@ from e3sm_assist.settings import Settings, load_settings
 
 
 class Generator(Protocol):
+    """Callable interface for generating query responses."""
+
     def __call__(
         self,
         question: str,
@@ -50,6 +52,7 @@ class AssistService:
         self.generator = generator or build_generator(self.settings) or generate_response
 
     def query(self, request: QueryRequest) -> QueryResponse:
+        """Answer a request using retrieval, routing, and generation."""
         candidates = self.store.search(request.question, max(request.top_k, 8))
         accepted = self._accepted_evidence(request.question, candidates, request.top_k)
         decision = self.router.route(request.question, accepted)
@@ -76,17 +79,18 @@ class AssistService:
         return candidates[:top_k]
 
     def health(self) -> dict[str, object]:
+        """Return service health and loaded corpus statistics."""
         return {"status": "ok", "corpus": corpus_summary(self.entries), "chunks": len(self.chunks)}
 
 
 @lru_cache(maxsize=1)
 def get_service() -> AssistService:
+    """Return the process-cached application service."""
     return AssistService()
 
 
 def allowed_cors_origins() -> list[str]:
     """Read safe comma-separated CORS origins for local prototype frontend access."""
-
     return list(load_settings().cors_allow_origins)
 
 
@@ -102,6 +106,7 @@ app.add_middleware(
 
 @app.get("/health")
 def health(service: Annotated[AssistService, Depends(get_service)]) -> dict[str, object]:
+    """Return the health endpoint response."""
     return service.health()
 
 
@@ -110,4 +115,5 @@ def query(
     request: QueryRequest,
     service: Annotated[AssistService, Depends(get_service)],
 ) -> QueryResponse:
+    """Return the response for a query endpoint request."""
     return service.query(request)
