@@ -1,0 +1,14 @@
+.slim/deepwork/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.py[cod]
+node_modules/
+dist/
+coverage/
+.coverage
+.DS_Store
+.env
+backend/.env

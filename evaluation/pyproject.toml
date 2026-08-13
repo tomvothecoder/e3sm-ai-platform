@@ -1,0 +1,18 @@
+[project]
+name = "e3sm-assist-evaluation"
+version = "0.1.0"
+description = "Independent deterministic evaluation for E3SM-ASSIST."
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "mypy>=1.17.0",
+  "pytest>=8.4.0",
+  "ruff>=0.12.0",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["."]
+pythonpath = [".."]

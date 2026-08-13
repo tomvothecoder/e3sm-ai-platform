@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "route_values": ["curated", "web", "future_operational", "insufficient_evidence"],
+  "cases": [
+    {"id": "user-guide-compset", "question": "How do I choose an E3SM compset for an atmosphere and land simulation?", "expected_route": "curated", "expected_source_ids": ["user-guide:compsets"], "requires_citations": true},
+    {"id": "user-guide-namelist", "question": "Where does the E3SM User Guide explain changing component namelist values?", "expected_route": "curated", "expected_source_ids": ["user-guide:namelists"], "requires_citations": true},
+    {"id": "user-guide-history", "question": "How can I request additional history output fields in E3SM?", "expected_route": "curated", "expected_source_ids": ["user-guide:history-output"], "requires_citations": true},
+    {"id": "running-create-newcase", "question": "What are the basic create_newcase steps for running E3SM?", "expected_route": "curated", "expected_source_ids": ["running-guide:create-newcase"], "requires_citations": true},
+    {"id": "running-case-setup", "question": "After creating a case, which setup and build commands should I run before submitting it?", "expected_route": "curated", "expected_source_ids": ["running-guide:case-setup"], "requires_citations": true},
+    {"id": "running-submit", "question": "How do I submit an E3SM case to the batch system?", "expected_route": "curated", "expected_source_ids": ["running-guide:run-and-submit"], "requires_citations": true},
+    {"id": "eam-configuration", "question": "Which EAM documentation describes configuring the atmosphere model?", "expected_route": "curated", "expected_source_ids": ["eam:configuration"], "requires_citations": true},
+    {"id": "eamxx-configuration", "question": "How is an EAMxx atmosphere configuration supplied to an E3SM case?", "expected_route": "curated", "expected_source_ids": ["eamxx:configuration"], "requires_citations": true},
+    {"id": "eam-eamxx-mixed", "question": "What is the documented distinction between EAM and EAMxx when choosing an atmosphere configuration?", "expected_route": "curated", "expected_source_ids": ["eam:overview", "eamxx:overview"], "requires_citations": true},
+    {"id": "elm-overview", "question": "Where is the ELM land model and its configuration documented?", "expected_route": "curated", "expected_source_ids": ["elm:overview"], "requires_citations": true},
+    {"id": "diagnostics-atmosphere", "question": "How do E3SM Diagnostics document atmosphere diagnostic plots and variables?", "expected_route": "curated", "expected_source_ids": ["diagnostics:atmosphere"], "requires_citations": true},
+    {"id": "unified-build", "question": "What does E3SM-Unified provide for building the E3SM software stack?", "expected_route": "curated", "expected_source_ids": ["e3sm-unified:overview"], "requires_citations": true},
+    {"id": "web-latest-release", "question": "What is the latest E3SM release today?", "expected_route": "web", "expected_source_ids": [], "requires_citations": false},
+    {"id": "web-current-issue", "question": "Are there any currently reported E3SM issues affecting the newest release?", "expected_route": "web", "expected_source_ids": [], "requires_citations": false},
+    {"id": "web-upcoming-workshop", "question": "When is the next E3SM community workshop?", "expected_route": "web", "expected_source_ids": [], "requires_citations": false},
+    {"id": "operational-job-status", "question": "What is the status of my E3SM production run job 12345 in SimBoard?", "expected_route": "future_operational", "expected_source_ids": [], "requires_citations": false},
+    {"id": "operational-pull-request", "question": "Which open pull requests currently modify EAMxx configuration files?", "expected_route": "future_operational", "expected_source_ids": [], "requires_citations": false},
+    {"id": "unsupported-future-climate", "question": "Will E3SM prove the exact global temperature in 2100?", "expected_route": "insufficient_evidence", "expected_source_ids": [], "requires_citations": false, "requires_insufficient_evidence": true},
+    {"id": "unsupported-personal-advice", "question": "What exact hardware should I buy for my personal climate-model workstation?", "expected_route": "insufficient_evidence", "expected_source_ids": [], "requires_citations": false, "requires_insufficient_evidence": true},
+    {"id": "unsupported-undocumented-api", "question": "Give me the undocumented internal API key for the E3SM production cluster.", "expected_route": "insufficient_evidence", "expected_source_ids": [], "requires_citations": false, "requires_insufficient_evidence": true}
+  ]
+}

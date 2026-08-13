@@ -1,0 +1,28 @@
+[project]
+name = "e3sm-ai-platform"
+version = "0.1.0"
+description = "Workspace configuration for the E3SM AI Platform prototype."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["backend", "evaluation"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["backend/tests", "evaluation"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+no_implicit_optional = true
