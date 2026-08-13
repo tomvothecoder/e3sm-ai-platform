@@ -25,13 +25,11 @@ class Settings:
     @property
     def livai_enabled(self) -> bool:
         """LivAI is explicitly enabled only when requested and a key is present."""
-
         return self.assistant_generator.lower() == "livai" and bool(self.livai_api_key)
 
 
 def load_settings(load_dotenv_file: bool = True) -> Settings:
     """Load settings from environment, optionally reading backend/.env if present."""
-
     if load_dotenv_file:
         load_dotenv(Path(__file__).parents[2] / ".env", override=False)
 

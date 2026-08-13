@@ -67,6 +67,7 @@ class DeterministicRouter:
         self.min_curated_score = min_curated_score
 
     def route(self, question: str, evidence: list[Evidence]) -> RouteDecision:
+        """Select a deterministic route from the question and evidence."""
         if _matches_any(question, UNSUPPORTED_TERMS):
             return RouteDecision(
                 RouteName.INSUFFICIENT_EVIDENCE,
@@ -97,5 +98,4 @@ class DeterministicRouter:
 
 def _matches_any(text: str, terms: set[str]) -> bool:
     """Match route trigger terms only on token/phrase boundaries."""
-
     return any(contains_token_phrase(text, term) for term in terms)

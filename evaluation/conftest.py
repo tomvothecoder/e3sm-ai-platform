@@ -22,7 +22,9 @@ def evaluate() -> Callable[[str], Mapping[str, object]]:
     """Load the configured backend evaluator exactly once per pytest session."""
     target = os.getenv("E3SM_ASSIST_EVALUATOR")
     if not target:
-        pytest.skip("Set E3SM_ASSIST_EVALUATOR=package.module:callable to run integration evaluation")
+        pytest.skip(
+            "Set E3SM_ASSIST_EVALUATOR=package.module:callable to run integration evaluation"
+        )
 
     try:
         module_name, callable_name = target.split(":", 1)
@@ -36,7 +38,9 @@ def evaluate() -> Callable[[str], Mapping[str, object]]:
 
 
 @pytest.fixture(scope="session")
-def results_by_id(evaluate: Callable[[str], Mapping[str, object]], evaluation_cases: list[dict[str, object]]) -> dict[str, Mapping[str, object]]:
+def results_by_id(
+    evaluate: Callable[[str], Mapping[str, object]], evaluation_cases: list[dict[str, object]]
+) -> dict[str, Mapping[str, object]]:
     """Evaluate every prompt once, avoiding repeated backend initialization or calls."""
     results: dict[str, Mapping[str, object]] = {}
     for case in evaluation_cases:
