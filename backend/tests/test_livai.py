@@ -244,7 +244,7 @@ def test_livai_failure_falls_back_to_deterministic_cited_answer() -> None:
     assert response.citations[0].source_id == "user-guide:compsets"
     assert response.retrieved_evidence[0].source_id == "user-guide:compsets"
     assert response.debug["livai_fallback"] is True
-    assert response.debug["livai_error"] == "RuntimeError"
+    assert response.debug["livai_error"] == "provider_error"
 
 
 def test_livai_fallback_debug_never_exposes_secret_or_endpoint() -> None:

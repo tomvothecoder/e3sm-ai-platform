@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Protocol
 from urllib.parse import urlparse
 
+from opentelemetry import trace
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
@@ -77,17 +78,24 @@ class LivAIChatClient:
 
     def complete(self, messages: list[dict[str, str]]) -> str:
         """Return validated LivAI output for the supplied chat messages."""
-        self._validate_https_base_url()
-        user_prompt = "\n\n".join(
-            message["content"] for message in messages if message.get("role") == "user"
-        )
-        try:
-            output = self._agent.run_sync(user_prompt).output
-        except Exception as exc:
-            raise LivAIProviderError("agent_run_error") from exc
-        if not isinstance(output, str) or not output.strip():
-            raise LivAIProviderError("empty_content")
-        return output.strip()
+        with trace.get_tracer(__name__).start_as_current_span("generation.provider") as span:
+            span.set_attribute("generation.provider", "livai")
+            self._validate_https_base_url()
+            user_prompt = "\n\n".join(
+                message["content"] for message in messages if message.get("role") == "user"
+            )
+            try:
+                output = self._agent.run_sync(user_prompt).output
+            except Exception as exc:
+                span.set_attribute("generation.provider_error", "agent_run_error")
+                span.set_attribute("generation.fallback", True)
+                raise LivAIProviderError("agent_run_error") from exc
+            if not isinstance(output, str) or not output.strip():
+                span.set_attribute("generation.provider_error", "empty_content")
+                span.set_attribute("generation.fallback", True)
+                raise LivAIProviderError("empty_content")
+            span.set_attribute("generation.fallback", False)
+            return output.strip()
 
     def _validate_https_base_url(self) -> None:
         parsed = urlparse(self.base_url)
@@ -118,7 +126,7 @@ class LivAIEvidenceGenerator:
             answer = self.client.complete(build_livai_messages(question, evidence))
         except Exception as exc:
             fallback.debug["livai_fallback"] = True
-            fallback.debug["livai_error"] = exc.__class__.__name__
+            fallback.debug["livai_error"] = "provider_error"
             if isinstance(exc, LivAIProviderError):
                 fallback.debug["livai_error_code"] = exc.code
             return fallback

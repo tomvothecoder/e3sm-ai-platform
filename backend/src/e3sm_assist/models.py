@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, field_serializer
 
 
 class RouteName(StrEnum):
@@ -97,6 +97,11 @@ class QueryResponse(BaseModel):
     retrieved_evidence: list[RetrievedEvidence] = Field(default_factory=list)
     insufficient_evidence: bool = False
     debug: dict[str, Any] = Field(default_factory=dict)
+
+    @field_serializer("debug")
+    def serialize_debug(self, debug: dict[str, Any]) -> dict[str, Any]:
+        """Exclude the user question from the public debug response."""
+        return {key: value for key, value in debug.items() if key != "question"}
 
 
 class CorpusEntry(BaseModel):

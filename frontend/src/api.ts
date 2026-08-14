@@ -43,6 +43,30 @@ type RawQueryResponse = {
 }
 
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
+const publicRequestError = 'The assistant request could not be completed. Please try again.'
+
+function randomHex(byteLength: number): string {
+  const bytes = new Uint8Array(byteLength)
+  globalThis.crypto.getRandomValues(bytes)
+  // W3C trace IDs and parent IDs must not be all zeroes.
+  bytes[0] ||= 1
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+function createTraceparent(): string {
+  return `00-${randomHex(16)}-${randomHex(8)}-01`
+}
+
+function requestId(response: Response): string | undefined {
+  const value = response.headers.get('X-Request-ID')?.trim()
+  // Keep the public correlation value bounded and free of control characters.
+  return value && value.length <= 128 && /^[A-Za-z0-9._:-]+$/.test(value) ? value : undefined
+}
+
+function requestError(response?: Response): Error {
+  const id = response ? requestId(response) : undefined
+  return new Error(id ? `${publicRequestError} Request ID: ${id}.` : publicRequestError)
+}
 
 function text(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value : undefined
@@ -93,16 +117,29 @@ export function normalizeQueryResponse(payload: unknown): QueryResponse {
 }
 
 export async function queryAssistant(question: string): Promise<QueryResponse> {
-  const response = await fetch(`${apiBaseUrl}/query`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question }),
-  })
-  if (!response.ok) {
-    const detail = await response.text()
-    throw new Error(detail || `Request failed (${response.status})`)
+  let response: Response
+  try {
+    response = await fetch(`${apiBaseUrl}/query`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        traceparent: createTraceparent(),
+      },
+      body: JSON.stringify({ question }),
+    })
+  } catch {
+    throw requestError()
   }
-  return normalizeQueryResponse(await response.json())
+
+  if (!response.ok) {
+    throw requestError(response)
+  }
+
+  try {
+    return normalizeQueryResponse(await response.json())
+  } catch {
+    throw new Error('The assistant returned an invalid response.')
+  }
 }
 
 export function citationLabel(citation: Citation, index: number) {

@@ -1,0 +1,27 @@
+name: e3sm-assist-observability
+
+services:
+  jaeger:
+    image: jaegertracing/jaeger:2.10.0
+    ports:
+      - "127.0.0.1:16686:16686"
+    expose:
+      - "4317"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:16686/"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.128.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:13133:13133"
+    depends_on:
+      jaeger:
+        condition: service_healthy
