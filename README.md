@@ -1,143 +1,97 @@
 # E3SM AI Platform
 
-An extensible, provider-independent prototype for **E3SM-ASSIST**: a chat interface
-for answering E3SM questions from curated, authoritative documentation. It favors
-traceable evidence and explicit uncertainty over unsupported answers.
+E3SM AI Platform is a provider-independent prototype for **E3SM-ASSIST**: a chat application that answers E3SM questions from a curated local documentation corpus. It prioritizes traceable evidence, citations, and explicit insufficient-evidence responses over unsupported answers. It is a prototype, not a complete E3SM documentation service or production operational assistant.
 
-## Setup
+## Current features
 
-Prerequisites: Python 3.13, [uv](https://docs.astral.sh/uv/), and Node.js 22 with
-npm. Install the Python workspace once from the repository root:
+- FastAPI `POST /query` service with deterministic routing, retrieval, answer generation, citations, provenance, and debug information.
+- Curated 31-entry corpus spanning the E3SM User Guide, Running E3SM, EAM, EAMxx, ELM, Diagnostics, and E3SM-Unified.
+- React, TypeScript, and Vite chat UI with loading/error states, citations, expandable evidence, and route/source debugging.
+- Deterministic evaluation fixtures and provider-independent interfaces for retrieval, generation, web, and operational-source extensions.
+- Optional backend-only LivAI generation for curated-evidence answers; deterministic generation is the default and fallback.
+
+## Prerequisites
+
+- Python 3.13
+- [uv](https://docs.astral.sh/uv/)
+- Node.js 22 and npm
+
+## Quickstart
+
+From the repository root, install dependencies and start the API:
 
 ```bash
 uv sync --all-packages --all-groups
-(cd frontend && npm ci)
+make frontend-install
+make backend-start
 ```
 
-Run locally:
+In a second terminal, start the web client:
 
 ```bash
-uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
-(cd frontend && npm run dev)
+make frontend-start
 ```
 
-The backend defaults to local curated-corpus data. No proprietary service or
-network request is required to run or test the prototype.
-
-### Optional local tracing
-
-Local trace inspection uses Docker Desktop plus the development Collector and
-Jaeger stack expected at `deploy/observability/docker-compose.yml`:
+Send a request to the API:
 
 ```bash
+curl -X POST http://localhost:8000/query \
+  -H 'Content-Type: application/json' \
+  -d '{"question":"How do I choose an E3SM compset?"}'
+```
+
+The default configuration uses local curated-corpus data; it does not require a proprietary service or network request to run or test.
+
+## Standard commands
+
+```bash
+# Run backend, evaluation, lint, and type checks
+make check
+
+# Run frontend checks and production build
+make frontend-test frontend-lint frontend-typecheck frontend-build
+
+# Run individual services
+make backend-start
+make frontend-start
+
+# Manage the optional local observability stack
 make observability-up
-E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces \
-E3SM_ASSIST_SERVICE_NAME=e3sm-assist-api \
-E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local \
-uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
+make observability-status
+make observability-logs
+make observability-down
 ```
 
-Submit a query, then open Jaeger at <http://localhost:16686>. The local stack is
-for loopback-only development metadata under the privacy rules in the
-[observability guide](docs/dev/observability.md). Stop it with
-`make observability-down`; that target is expected to stop containers without a
-volume-deletion flag, but local Jaeger traces may still be ephemeral depending on
-the compose storage configuration.
+## Architecture and request flow
 
-### Optional LivAI generation
+`frontend/` sends a question to the FastAPI backend's `POST /query` endpoint (the Vite development server proxies relative `/query` requests). The backend deterministically selects a route, retrieves relevant curated evidence when supported, generates an evidence-constrained response, and returns the answer with citations, provenance, route metadata, and debug information. Ingestion is an explicit process: source records are normalized, chunked, embedded through an abstraction, and stored for retrieval; the application does not fetch documentation at request time.
 
-Deterministic generation is the default. To enable the optional LivAI generator for
-answers supported by curated evidence, set these **backend-only** environment
-variables (for example, in `backend/.env` or in the backend process environment):
+Available routes are curated documentation, opt-in web-search fallback, future operational/tool sources, and explicit insufficient evidence. Web and operational connectors are extension points and are not enabled by default.
 
-```bash
-ASSISTANT_GENERATOR=livai
-ASSISTANT_LIVAI_API_KEY=your-secret-key
-ASSISTANT_LIVAI_MODEL=gpt-5.5
-ASSISTANT_LIVAI_BASE_URL=https://livai-api.llnl.gov/
-```
+## Project layout
 
-`ASSISTANT_LIVAI_API_KEY` is a secret and must be injected through an untracked
-backend environment or `backend/.env`, or through a deployment secret manager; it
-must not be committed. These variables are not `VITE_` variables and must never be
-placed in frontend configuration. The configured endpoint must use HTTPS; a
-misconfigured or non-HTTPS endpoint is rejected. LivAI requests use a 30-second
-timeout and have no automatic retry. LivAI is only used after curated evidence
-supports the answer; routing and evidence selection remain local. If a request fails,
-the backend falls back to deterministic evidence-constrained output rather than making
-a runtime web request.
-
-## Architecture
-
-- `frontend/` is a React + TypeScript + Vite chat client.
-- `backend/` contains the FastAPI `POST /query` vertical slice and independently
-  testable ingestion, retrieval, routing, generation, and integration interfaces.
-- `evaluation/` contains deterministic question fixtures and scoring checks.
-- The [observability guide](docs/dev/observability.md) describes the current
-  baseline and future telemetry, audit, and RAG reproducibility requirements.
-- This root `pyproject.toml` defines a uv workspace over the backend and evaluation
-  Python projects; their dependency declarations remain owned by those projects.
-
-The query response exposes the selected route and retrieved evidence to support the
-client debug view and automated evaluation. Provider interfaces leave room for local
-or hosted embeddings, vector stores, generation models, and operational connectors
-without coupling the core flow to any vendor.
-
-## Ingestion
-
-Curated source records retain the source URL, section, component/topic, version,
-authority, and provenance. Ingestion normalizes those records, splits them into
-attributable chunks, creates embeddings through an abstraction, and stores them in a
-retrieval backend. The starter corpus is deliberately local and representative of
-the E3SM User Guide, Running E3SM Guide, EAM/EAMxx, ELM, diagnostics, and
-E3SM-Unified material. Refreshing or expanding corpus content is an explicit ingest
-operation, not a runtime web fetch.
-
-## Routing
-
-Each question is routed deterministically among:
-
-1. **Curated RAG** for supported, stable documentation questions.
-2. **Web-search fallback** only when configured and a current-information or corpus
-   gap route is selected.
-3. **Operational/tool source** through future SimBoard, GitHub, API, or MCP adapters.
-4. **Insufficient evidence** when available sources cannot support a reliable answer.
-
-Answers include citations and evidence. The insufficient-evidence path must say what
-is missing rather than infer facts. Networked fallback integrations are opt-in and
-are not invoked by default.
-
-## Evaluation
-
-The evaluation suite uses representative E3SM questions to score route correctness,
-retrieval relevance, citation/provenance presence, and insufficient-evidence
-behavior. It is deterministic and uses fixtures rather than live LLM or web calls.
-
-```bash
-make backend-test backend-lint backend-typecheck evaluation-test evaluation-lint evaluation-typecheck
-make frontend-install frontend-test frontend-lint frontend-typecheck frontend-build
-```
-
-The CI workflow runs these Python checks in `backend/` and `evaluation/`, and runs
-frontend install, test, lint, typecheck, and production build explicitly in
-`frontend/`.
+- `backend/` — FastAPI service, ingestion, retrieval, routing, generation, and integration interfaces.
+- `frontend/` — React/Vite chat client.
+- `evaluation/` — deterministic question fixtures and scoring checks.
+- `deploy/observability/` — local development Collector and Jaeger configuration.
 
 ## Limitations
 
-- The prototype corpus is small and not a complete substitute for current E3SM docs.
-- Retrieval quality is bounded by chunking, corpus coverage, and the selected local
-  embedding implementation.
-- Web and operational connectors are extension points, not bundled credentials or
-  live production integrations.
-- LivAI generation is optional and requires a backend-only API key; deterministic
-  generation remains the no-secret default.
-- It has no authentication, persistent conversation history, or access controls.
+- The prototype corpus is small and is not a complete substitute for current E3SM documentation.
+- Retrieval quality is limited by corpus coverage, chunking, and the local embedding implementation.
+- Web and operational integrations have no bundled credentials or live production implementation.
+- There is no authentication, persistent conversation history, or access control.
+- Optional LivAI requires backend-only secret provisioning; do not put credentials in the frontend or commit them. See the setup documentation below.
 
-## Next steps
+## Detailed documentation
 
-1. Expand and version the curated corpus with a reviewed update process.
-2. Add hybrid retrieval, reranking, and pgvector behind existing interfaces.
-3. Implement permission-aware SimBoard, GitHub MCP, and operational API adapters.
-4. Add regression fixtures from real user questions and review citation quality.
-5. Add deployment configuration, observability, authentication, and data governance
-   before handling protected operational data.
+- [Documentation index](docs/README.md)
+- [User usage guide](docs/user/usage.md)
+- [Developer setup](docs/dev/setup.md)
+- [Architecture](docs/dev/architecture.md)
+- [Evaluation](docs/dev/evaluation.md)
+- [Observability](docs/dev/observability.md) — includes the optional local tracing workflow.
+- [Prototype status](docs/dev/prototype-status.md)
+- [Roadmap](docs/roadmap.md)
+
+For optional LivAI configuration, use the backend-only guidance in the [developer setup](docs/dev/setup.md). For tracing, use the [observability guide](docs/dev/observability.md).

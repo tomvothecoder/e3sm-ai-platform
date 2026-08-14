@@ -10,7 +10,7 @@ delivered features; this document focuses on durable operating guidance.
 
 - The browser sends chat requests to the FastAPI backend `POST /query` endpoint.
   Local development can use the Vite `/query` proxy described in the
-  [README](../../README.md).
+  [usage guide](../user/usage.md).
 - The backend service performs deterministic retrieval, accepted-evidence
   filtering, route selection, and deterministic generation. Optional LivAI
   generation is available only when backend-only LivAI environment variables are
@@ -373,9 +373,8 @@ Future request ID requirements:
 - Return the selected ID in every response header.
 - Include the ID in frontend error displays, backend structured logs, traces, and
   provider fallback metadata.
-- Expose `X-Request-ID` with CORS `expose_headers` so browser clients can read
-  response correlation IDs; keep request headers such as `traceparent` and
-  `tracestate` in the separate CORS `allow_headers` list.
+- Propagate the selected ID into query-specific traces and provider fallback
+  metadata when those are added.
 - Never encode user IDs, questions, source text, or secrets in the request ID.
 
 ## Audit roadmap before auth or write-capable tools

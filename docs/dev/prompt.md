@@ -1,3 +1,8 @@
+> **Historical notice:** This document is the original implementation prompt and
+> is retained for context only. It is not canonical project documentation. Use
+> the documentation index at [../README.md](../README.md) for current setup,
+> usage, architecture, evaluation, status, observability, and roadmap guidance.
+
 Build a minimal but extensible **E3SM AI Platform** prototype focused initially on **E3SM-ASSIST**.
 
 ## Repository
