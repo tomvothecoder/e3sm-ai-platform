@@ -27,6 +27,10 @@ delivered features; this document focuses on durable operating guidance.
 - OTLP trace export is disabled unless the backend is explicitly configured with
   an OTLP HTTP traces endpoint.
 
+Telemetry `service.name` identifies each emitting process: the backend API uses
+`e3sm-assist-api`, a future browser frontend uses `e3sm-assist-web`, and
+`e3sm-assist` remains the shared product label.
+
 Not currently implemented:
 
 - A production or shared OpenTelemetry Collector deployment, sidecar, service,
@@ -63,7 +67,7 @@ E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces
 Optional local resource labels:
 
 ```bash
-E3SM_ASSIST_SERVICE_NAME=e3sm-assist-backend
+E3SM_ASSIST_SERVICE_NAME=e3sm-assist-api
 E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local
 ```
 
@@ -71,7 +75,7 @@ Start the backend with those variables in the backend process environment:
 
 ```bash
 E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces \
-E3SM_ASSIST_SERVICE_NAME=e3sm-assist-backend \
+E3SM_ASSIST_SERVICE_NAME=e3sm-assist-api \
 E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local \
 uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
 ```
@@ -223,7 +227,7 @@ Recommended fields:
 | `timestamp` | RFC 3339 UTC timestamp. |
 | `level` | `INFO`, `WARN`, or `ERROR`. |
 | `event` | Stable event name. |
-| `service` | `e3sm-assist-backend` or `e3sm-assist-frontend`. |
+| `service` | Emitting process name, such as `e3sm-assist-api` or future `e3sm-assist-web`. |
 | `environment` | Deployment environment label. |
 | `request_id` | Propagated request ID once implemented. |
 | `trace_id` | OpenTelemetry trace ID once implemented. |
@@ -255,7 +259,7 @@ Example shape, with placeholder IDs only:
   "timestamp": "2026-08-13T00:00:00Z",
   "level": "INFO",
   "event": "query.completed",
-  "service": "e3sm-assist-backend",
+  "service": "e3sm-assist-api",
   "environment": "local",
   "request_id": "not-implemented",
   "trace_id": "not-implemented",
@@ -289,7 +293,7 @@ backend-only environment variables:
 
 ```bash
 E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces
-E3SM_ASSIST_SERVICE_NAME=e3sm-assist-backend
+E3SM_ASSIST_SERVICE_NAME=e3sm-assist-api
 E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local
 E3SM_ASSIST_OTLP_HEADERS=
 ```
@@ -312,7 +316,7 @@ Future deployments may prefer standard OpenTelemetry environment variables where
 possible, for example:
 
 ```bash
-OTEL_SERVICE_NAME=e3sm-assist-backend
+OTEL_SERVICE_NAME=e3sm-assist-api
 OTEL_RESOURCE_ATTRIBUTES=deployment.environment=local,app.name=e3sm-assist
 OTEL_EXPORTER_OTLP_ENDPOINT=https://collector.example.invalid:4318
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf

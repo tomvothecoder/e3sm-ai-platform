@@ -32,7 +32,7 @@ Jaeger stack expected at `deploy/observability/docker-compose.yml`:
 ```bash
 make observability-up
 E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces \
-E3SM_ASSIST_SERVICE_NAME=e3sm-assist-backend \
+E3SM_ASSIST_SERVICE_NAME=e3sm-assist-api \
 E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local \
 uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
 ```
