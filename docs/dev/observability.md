@@ -29,14 +29,95 @@ delivered features; this document focuses on durable operating guidance.
 
 Not currently implemented:
 
-- An OpenTelemetry Collector deployment, sidecar, service, Helm chart, or
-  repository-owned collector configuration.
+- A production or shared OpenTelemetry Collector deployment, sidecar, service,
+  Helm chart, or managed telemetry backend. The repository has only a local
+  Docker development stack for trace inspection.
 - Metrics export or log export through OpenTelemetry.
 - Caller-supplied request ID validation and propagation.
 - Query-specific structured logs for route, evidence counts, provider fallback,
   corpus snapshots, or policy versions.
 - Authentication, authorization, audit logging, persistent conversation history,
   or write-capable tools.
+
+## Local Docker Collector and Jaeger
+
+The local development trace stack is defined in
+[`deploy/observability/docker-compose.yml`](../../deploy/observability/docker-compose.yml).
+It is intended for developer-only inspection of trace metadata.
+
+Prerequisite: Docker Desktop must be installed and running.
+
+Start the local Collector and Jaeger stack from the repository root:
+
+```bash
+make observability-up
+```
+
+Configure the backend process to export traces to the local Collector. The OTLP
+endpoint must be exactly:
+
+```bash
+E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces
+```
+
+Optional local resource labels:
+
+```bash
+E3SM_ASSIST_SERVICE_NAME=e3sm-assist-backend
+E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local
+```
+
+Start the backend with those variables in the backend process environment:
+
+```bash
+E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces \
+E3SM_ASSIST_SERVICE_NAME=e3sm-assist-backend \
+E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local \
+uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
+```
+
+Submit a query from the frontend or directly:
+
+```bash
+curl -s http://localhost:8000/query \
+  -H 'Content-Type: application/json' \
+  -d '{"question":"How do I use E3SM-Unified?"}'
+```
+
+Open Jaeger at <http://localhost:16686> and search for the configured service
+name. Helpful local targets:
+
+```bash
+make observability-status
+make observability-logs
+make observability-down
+```
+
+The compose stack binds exposed ports to loopback only (`127.0.0.1`). Do not
+expose the Collector or Jaeger UI on shared networks. The stack is still subject
+to the prohibited-payload rules in this guide: retain trace metadata only, not
+raw questions, answers, prompts, evidence text, provider payloads, or secrets.
+The Collector removes `net.peer.ip` and `http.user_agent` before batch processing
+and local Jaeger export; production Collectors must maintain an equivalent policy.
+
+`make observability-down` runs Docker Compose `down` without a volume-deletion
+flag, so it stops containers without explicitly deleting Docker volumes. The
+current Jaeger development stack does not define persistent storage, so local
+trace data should be treated as ephemeral.
+
+Troubleshooting:
+
+- Docker daemon unavailable: start Docker Desktop, wait until the engine is
+  running, then rerun `make observability-up`.
+- Port `4318` already in use: stop the other local OTLP HTTP Collector or change
+  the compose port mapping and update `E3SM_ASSIST_OTLP_ENDPOINT` consistently.
+- Port `16686` already in use: stop the other Jaeger instance or change the
+  Jaeger UI port mapping before opening the UI.
+- Port `13133` already in use: stop the other local Collector health endpoint or
+  change the compose health-check port mapping.
+- No traces in Jaeger: confirm the backend was started after setting
+  `E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces`, submit a new
+  query, then search for the configured service name.
 
 ## Trace topology
 
@@ -199,23 +280,24 @@ Example shape, with placeholder IDs only:
 
 ## OTLP Collector deployment and environment configuration
 
-There is no repository-owned OTLP Collector deployment today. Do not document,
-operate, or depend on a collector service as if one exists.
+The repository-owned Collector configuration is local-development only. There is
+no production or shared Collector deployment in this repository; do not operate
+or depend on one as if it exists.
 
-The backend can be pointed at an already-approved OTLP HTTP traces endpoint with
+For local development, point the backend at the local Docker Collector with
 backend-only environment variables:
 
 ```bash
-E3SM_ASSIST_SERVICE_NAME=e3sm-assist
-E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=development
-E3SM_ASSIST_OTLP_ENDPOINT=
+E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces
+E3SM_ASSIST_SERVICE_NAME=e3sm-assist-backend
+E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local
 E3SM_ASSIST_OTLP_HEADERS=
 ```
 
-`E3SM_ASSIST_OTLP_ENDPOINT` must remain unset to disable export. If it is set,
-it should point only to an approved collector or telemetry gateway. Optional
-`E3SM_ASSIST_OTLP_HEADERS` uses comma-separated `key=value` entries for exporter
-headers and must not be logged or exposed to the frontend.
+`E3SM_ASSIST_OTLP_ENDPOINT` must remain unset to disable export. Outside local
+development, set it only for an approved Collector or telemetry gateway.
+Optional `E3SM_ASSIST_OTLP_HEADERS` uses comma-separated `key=value` entries for
+exporter headers and must not be logged or exposed to the frontend.
 
 Before enabling OTLP export, add an explicit deployment design that covers:
 
@@ -245,8 +327,8 @@ telemetry configuration and exported resource attributes.
 ## Sampling and retention
 
 Current local development has no repository-owned telemetry retention policy.
-Traces are not exported unless `E3SM_ASSIST_OTLP_ENDPOINT` is set, and no
-collector storage is defined in this repository.
+Traces are not exported unless `E3SM_ASSIST_OTLP_ENDPOINT` is set. The local
+Jaeger stack is for short-lived debugging, not durable retention.
 
 Recommended future defaults:
 

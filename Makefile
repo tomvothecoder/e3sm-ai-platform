@@ -1,4 +1,4 @@
-.PHONY: backend-start backend-test backend-lint backend-typecheck evaluation-test evaluation-lint evaluation-typecheck frontend-install frontend-start frontend-test frontend-lint frontend-typecheck frontend-build check
+.PHONY: backend-start backend-test backend-lint backend-typecheck evaluation-test evaluation-lint evaluation-typecheck frontend-install frontend-start frontend-test frontend-lint frontend-typecheck frontend-build check observability-up observability-down observability-status observability-logs
 
 backend-start:
 	uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
@@ -40,3 +40,15 @@ frontend-build:
 	npm --prefix frontend run build
 
 check: backend-test backend-lint backend-typecheck evaluation-test evaluation-lint evaluation-typecheck
+
+observability-up:
+	docker compose -f deploy/observability/docker-compose.yml up -d --wait
+
+observability-down:
+	docker compose -f deploy/observability/docker-compose.yml down
+
+observability-status:
+	docker compose -f deploy/observability/docker-compose.yml ps
+
+observability-logs:
+	docker compose -f deploy/observability/docker-compose.yml logs -f

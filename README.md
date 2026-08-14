@@ -24,6 +24,26 @@ uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
 The backend defaults to local curated-corpus data. No proprietary service or
 network request is required to run or test the prototype.
 
+### Optional local tracing
+
+Local trace inspection uses Docker Desktop plus the development Collector and
+Jaeger stack expected at `deploy/observability/docker-compose.yml`:
+
+```bash
+make observability-up
+E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces \
+E3SM_ASSIST_SERVICE_NAME=e3sm-assist-backend \
+E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local \
+uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
+```
+
+Submit a query, then open Jaeger at <http://localhost:16686>. The local stack is
+for loopback-only development metadata under the privacy rules in the
+[observability guide](docs/dev/observability.md). Stop it with
+`make observability-down`; that target is expected to stop containers without a
+volume-deletion flag, but local Jaeger traces may still be ephemeral depending on
+the compose storage configuration.
+
 ### Optional LivAI generation
 
 Deterministic generation is the default. To enable the optional LivAI generator for
