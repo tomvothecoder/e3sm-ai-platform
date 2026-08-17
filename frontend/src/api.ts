@@ -23,6 +23,10 @@ export type Evidence = {
   sourceLabel?: string
   sourceUrl?: string
   score?: number
+  coverage?: number
+  retrievalMode?: string
+  lexicalScore?: number
+  semanticScore?: number
 }
 
 export type QueryResponse = {
@@ -94,12 +98,17 @@ function normalizeEvidence(value: unknown): Evidence | null {
   if (!item) return null
   const source = sourceDetails(item.source ?? item.source_metadata ?? item.metadata)
   const score = typeof item.score === 'number' ? item.score : undefined
+  const coverage = typeof item.coverage === 'number' ? item.coverage : undefined
   return {
     title: text(item.title) ?? text(item.document_title),
     content: text(item.content) ?? text(item.text) ?? text(item.passage) ?? text(item.chunk),
     sourceLabel: source.label,
     sourceUrl: source.url ?? text(item.url),
     score,
+    coverage,
+    retrievalMode: text(item.retrieval_mode),
+    lexicalScore: typeof item.lexical_score === 'number' ? item.lexical_score : undefined,
+    semanticScore: typeof item.semantic_score === 'number' ? item.semantic_score : undefined,
   }
 }
 

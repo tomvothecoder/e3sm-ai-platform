@@ -24,7 +24,7 @@ from e3sm_assist.observability import (
     instrument_fastapi,
     log_request_complete,
 )
-from e3sm_assist.retrieval import InMemoryVectorStore, LexicalEmbedder
+from e3sm_assist.retrieval import build_retriever
 from e3sm_assist.router import DeterministicRouter
 from e3sm_assist.settings import Settings, load_settings
 
@@ -56,7 +56,7 @@ class AssistService:
         self.settings = settings or load_settings()
         self.entries = load_corpus()
         self.chunks = chunk_corpus(self.entries)
-        self.store = retriever or InMemoryVectorStore(LexicalEmbedder())
+        self.store = retriever or build_retriever(self.settings)
         if retriever is None:
             self.store.add(self.chunks)
         self.router = router or DeterministicRouter()

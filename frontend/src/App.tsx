@@ -33,7 +33,10 @@ function EvidencePanel({ response }: { response: QueryResponse }) {
               <div className="evidence-meta">
                 {item.sourceLabel ?? `Retrieved passage ${index + 1}`}
                 {typeof item.score === 'number'
-                  ? ` · ${(item.score * 100).toFixed(0)}% match`
+                  ? ` · retrieval score ${item.score.toFixed(3)}`
+                  : ''}
+                {typeof item.coverage === 'number'
+                  ? ` · ${(item.coverage * 100).toFixed(0)}% lexical coverage`
                   : ''}
               </div>
               <strong>{item.title}</strong>

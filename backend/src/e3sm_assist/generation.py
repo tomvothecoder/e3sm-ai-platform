@@ -39,6 +39,9 @@ def flat_evidence_from_evidence(evidence: list[Evidence]) -> list[RetrievedEvide
             score=item.score,
             matched_terms=item.matched_terms,
             coverage=item.coverage,
+            retrieval_mode=item.retrieval_mode,
+            lexical_score=item.lexical_score,
+            semantic_score=item.semantic_score,
         )
         for item in evidence
     ]

@@ -21,7 +21,8 @@ describe('normalizeQueryResponse', () => {
 
     expect(response.evidence).toEqual([{
       title: 'Canonical passage', content: 'A retrieved passage.', score: 0.82,
-      sourceLabel: 'E3SM reference guide', sourceUrl: 'https://example.org/guide',
+      sourceLabel: 'E3SM reference guide', sourceUrl: 'https://example.org/guide', coverage: undefined,
+      retrievalMode: undefined, lexicalScore: undefined, semanticScore: undefined,
     }])
     expect(response.citations).toHaveLength(1)
     expect(response.generation_mode).toBe('llm')
@@ -39,7 +40,7 @@ describe('queryAssistant', () => {
     await expect(queryAssistant('What is E3SM?')).resolves.toEqual({
       answer: 'Grounded answer.',
       citations: [],
-      evidence: [{ content: 'Retrieved passage.', sourceLabel: 'E3SM docs', sourceUrl: undefined, title: undefined, score: undefined }],
+      evidence: [{ content: 'Retrieved passage.', sourceLabel: 'E3SM docs', sourceUrl: undefined, title: undefined, score: undefined, coverage: undefined, retrievalMode: undefined, lexicalScore: undefined, semanticScore: undefined }],
       generation_mode: undefined,
       insufficient_evidence: false,
       route: undefined,

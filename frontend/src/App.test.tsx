@@ -14,7 +14,7 @@ describe('App', () => {
     vi.mocked(queryAssistant).mockResolvedValue({
       answer: 'A grounded answer.', citations: [], route: 'documentation', insufficient_evidence: false,
       generation_mode: 'llm',
-      evidence: [{ content: 'Retrieved context.', sourceLabel: 'E3SM documentation', sourceUrl: 'https://example.org/docs' }],
+      evidence: [{ content: 'Retrieved context.', sourceLabel: 'E3SM documentation', sourceUrl: 'https://example.org/docs', score: 0.82, coverage: 0.5 }],
     })
     render(<App />)
     const input = screen.getByLabelText('Ask E3SM-ASSIST a question')
@@ -24,7 +24,9 @@ describe('App', () => {
     expect(screen.getByText('LLM response')).toBeTruthy()
     expect(screen.getByText('1 retrieved')).toBeTruthy()
     screen.getByText('Evidence').click()
-    expect(screen.getByText('E3SM documentation')).toBeTruthy()
+    expect(screen.getByText(/E3SM documentation/)).toBeTruthy()
+    expect(screen.getByText(/retrieval score 0.820/)).toBeTruthy()
+    expect(screen.getByText(/50% lexical coverage/)).toBeTruthy()
   })
 
   it('submits a question when Enter is pressed', async () => {

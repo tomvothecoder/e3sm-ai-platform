@@ -76,6 +76,9 @@ class Evidence(BaseModel):
     source: SourceMetadata
     matched_terms: list[str] = Field(default_factory=list)
     coverage: float = 0.0
+    retrieval_mode: str = "lexical"
+    lexical_score: float | None = None
+    semantic_score: float | None = None
 
 
 class RetrievedEvidence(BaseModel):
@@ -92,6 +95,9 @@ class RetrievedEvidence(BaseModel):
     score: float
     matched_terms: list[str] = Field(default_factory=list)
     coverage: float = 0.0
+    retrieval_mode: str = "lexical"
+    lexical_score: float | None = None
+    semantic_score: float | None = None
 
 
 class QueryResponse(BaseModel):

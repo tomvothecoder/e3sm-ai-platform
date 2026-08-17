@@ -80,6 +80,37 @@ Common local settings are:
 - `E3SM_ASSIST_OTLP_ENDPOINT`, `E3SM_ASSIST_SERVICE_NAME`,
   `E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT`, `E3SM_ASSIST_OTLP_HEADERS`: optional
   backend observability settings.
+- `E3SM_ASSIST_RETRIEVAL_MODE`: `lexical` (default), `semantic`, or `hybrid`.
+  Lexical mode is offline-safe and never loads an embedding model.
+- `E3SM_ASSIST_EMBEDDING_MODEL`: Hugging Face model used for semantic and hybrid
+  retrieval; defaults to `BAAI/bge-small-en-v1.5`. Starting either mode may
+  download the model and its dependencies on first use, so provision network
+  access, cache storage, and suitable CPU or accelerator memory for the chosen
+  model.
+- `E3SM_ASSIST_RETRIEVAL_SEMANTIC_MIN_SCORE`: dense cosine-similarity gate for
+  semantic evidence; defaults to `0.7`. It is a model-calibration threshold,
+  not a confidence percentage.
+- `E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_COVERAGE` and
+  `E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_SCORE`: lexical acceptance gates, defaulting
+  to `0.18` and `0.11` respectively.
+- `E3SM_ASSIST_RETRIEVAL_LEXICAL_WEIGHT` and
+  `E3SM_ASSIST_RETRIEVAL_SEMANTIC_WEIGHT`: non-negative hybrid weights, each
+  defaulting to `0.5`. Hybrid ranking uses their normalized weighted average of
+  lexical relevance (clamped lexical score) and non-negative semantic cosine
+  similarity. Set at least one weight above zero.
+
+For example, enable semantic retrieval locally with:
+
+```bash
+E3SM_ASSIST_RETRIEVAL_MODE=semantic \
+E3SM_ASSIST_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \
+E3SM_ASSIST_RETRIEVAL_SEMANTIC_MIN_SCORE=0.7 \
+uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
+```
+
+Semantic and hybrid candidates still require official source authority and are
+rejected for unsupported intents. They retain citations and produce the same
+explicit insufficient-evidence response when no acceptable evidence is found.
 
 Frontend local settings are documented in `frontend/.env.example`:
 
