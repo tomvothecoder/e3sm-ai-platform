@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap');
 
 :root {
-  font-family: 'DM Mono', monospace;
-  color: #ddede6;
-  background: #071619;
+  font-family: 'Proxima Nova', 'Helvetica Neue', Arial, sans-serif;
+  color: #233447;
+  background: #eef7ff;
   font-synthesis: none;
 }
 
@@ -15,16 +15,11 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: radial-gradient(ellipse 62% 42% at 50% 36%, #13383b 0%, #0a2023 43%, transparent 73%), #071619;
+  background: #eef7ff;
 }
 
-body::before {
-  content: '';
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  opacity: 0.18;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");
+a {
+  color: inherit;
 }
 
 button,
@@ -38,97 +33,133 @@ button {
 
 .shell {
   min-height: 100vh;
-  max-width: 1240px;
-  margin: auto;
-  padding: 28px 48px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px 20px;
   display: grid;
   grid-template-rows: auto 1fr auto auto;
-  position: relative;
+  background: #fff;
+  box-shadow: 0 0 18px rgb(15 69 117 / 12%);
 }
 
 .masthead {
+  min-height: 98px;
+  margin: 0 -48px;
+  padding: 18px 48px;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 185px 1fr auto;
   align-items: center;
-  color: #8eaaa3;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  gap: 30px;
+  border-bottom: 5px solid #2f99fb;
+  background: rgb(255 255 255 / 96%);
 }
 
 .wordmark {
-  color: #e3f3ea;
-  font-size: 15px;
-  letter-spacing: -0.06em;
+  display: flex;
+  align-items: center;
+}
+
+.wordmark img {
+  display: block;
+  width: 165px;
+  max-height: 54px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.masthead nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 30px);
+}
+
+.masthead nav a,
+.utility-links a,
+.utility-links span {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-decoration: none;
-  font-weight: 500;
+  text-transform: uppercase;
 }
 
-.mark {
-  color: #a7e536;
+.masthead nav a {
+  color: #2275bb;
 }
 
-.masthead > p {
-  margin: 0;
+.masthead nav a:hover,
+.utility-links a:hover {
+  color: #31b852;
 }
 
-.status {
-  justify-self: end;
-  color: #a7e536;
+.utility-links {
+  display: flex;
+  justify-content: end;
+  gap: 15px;
+  align-items: center;
+  color: #2275bb;
+  white-space: nowrap;
 }
 
-.status i {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  background: #a7e536;
-  border-radius: 50%;
-  margin-right: 7px;
-  box-shadow: 0 0 10px #a7e536;
+.utility-links a {
+  color: #ef851f;
+}
+
+.utility-links span {
+  padding-left: 15px;
+  border-left: 1px solid #93c4f8;
 }
 
 .stage {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 80px 0 50px;
+  padding: 88px 0 50px;
 }
 
 .stage.has-response {
   align-items: flex-start;
-  padding-top: 64px;
+  padding-top: 55px;
 }
 
 .welcome {
-  width: 650px;
+  width: 720px;
   max-width: 100%;
-  animation: reveal 0.8s both;
+  text-align: center;
+  animation: reveal 0.5s both;
 }
 
 .eyebrow {
-  color: #a7e536;
+  color: #2275bb;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  margin: 0 0 15px;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-size: 10px;
-  margin: 0 0 22px;
 }
 
 .welcome h1 {
-  font: 400 clamp(42px, 7vw, 80px) / 0.98 'Libre Baskerville', Georgia, serif;
-  letter-spacing: -0.075em;
+  color: #0218aa;
+  font-size: clamp(36px, 6vw, 62px);
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  line-height: 1.08;
   margin: 0;
-  color: #edf5f0;
+  text-transform: uppercase;
 }
 
 .welcome h1 em {
-  color: #a7e536;
+  color: #2f99fb;
+  font-style: normal;
 }
 
 .intro {
-  max-width: 430px;
-  color: #a3b9b2;
-  font: 400 15px / 1.8 'Libre Baskerville', Georgia, serif;
-  margin: 30px 0 0;
+  max-width: 590px;
+  margin: 26px auto 0;
+  color: #4d6378;
+  font-size: 18px;
+  line-height: 1.55;
 }
 
 .query-area {
@@ -138,102 +169,112 @@ button {
 
 .query-area form {
   position: relative;
-  border: 1px solid #426461;
+  border: 1px solid #93c4f8;
   border-radius: 4px;
-  background: rgba(9, 30, 32, 0.8);
+  background: #fff;
+  box-shadow: 0 4px 12px rgb(34 117 187 / 14%);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .query-area form:focus-within {
-  border-color: #a7e536;
-  box-shadow: 0 0 0 3px rgba(167, 229, 54, 0.08);
+  border-color: #2275bb;
+  box-shadow: 0 0 0 3px rgb(47 153 251 / 16%);
 }
 
 .query-area textarea {
   display: block;
-  resize: none;
-  outline: none;
-  border: 0;
   width: 100%;
-  padding: 18px 65px 16px 20px;
-  color: #e3f3ea;
+  min-height: 78px;
+  padding: 20px 70px 18px 20px;
+  resize: none;
+  outline: 0;
+  border: 0;
+  color: #233447;
   background: transparent;
+  font-size: 16px;
   line-height: 1.5;
 }
 
 .query-area textarea::placeholder {
-  color: #6f8b86;
+  color: #7f9fbd;
 }
 
 .query-area form button {
   position: absolute;
-  right: 10px;
   top: 50%;
+  right: 12px;
+  width: 42px;
+  height: 42px;
   translate: 0 -50%;
-  width: 38px;
-  height: 38px;
   border: 0;
-  border-radius: 3px;
-  color: #092021;
-  background: #a7e536;
-  font-size: 22px;
+  border-radius: 4px;
+  color: #fff;
+  background: #ef851f;
+  box-shadow: 0 2px 4px rgb(146 72 0 / 24%);
+  font-size: 24px;
   line-height: 1;
-  transition: transform 0.2s, background 0.2s;
+  transition: background 0.2s, transform 0.2s;
 }
 
 .query-area form button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  background: #c3f46e;
+  background: #f3a457;
+  transform: translateY(-1px);
 }
 
 .query-area form button:disabled {
   cursor: not-allowed;
-  color: #799e56;
-  background: #294039;
+  color: #fff;
+  background: #a9bfd4;
+  box-shadow: none;
 }
 
 .starters {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 14px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding: 0 1px 2px;
 }
 
 .starters button {
-  white-space: nowrap;
-  background: none;
-  border: 1px solid #294845;
-  color: #91aaa4;
-  padding: 7px 10px;
-  border-radius: 20px;
-  font-size: 9px;
-  transition: all 0.2s;
+  flex: 0 0 auto;
+  border: 1px solid #93c4f8;
+  border-radius: 4px;
+  color: #2275bb;
+  background: #fff;
+  padding: 8px 11px;
+  font-size: 12px;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
 .starters button:hover {
-  border-color: #a7e536;
-  color: #dceec0;
+  border-color: #31b852;
+  color: #168c35;
+  background: #f3fff6;
 }
 
 footer {
+  margin-top: 22px;
+  color: #5a7187;
+  font-size: 12px;
   text-align: center;
-  color: #63807a;
-  font-size: 9px;
-  margin-top: 21px;
+}
+
+footer a {
+  color: #ef851f;
 }
 
 .answer-card {
   width: min(790px, 100%);
-  border-top: 1px solid #4e7470;
-  animation: reveal 0.45s both;
+  border-top: 5px solid #2f99fb;
+  animation: reveal 0.35s both;
 }
 
 .answer-topline {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 16px;
+  padding-top: 17px;
 }
 
 .answer-topline .eyebrow {
@@ -241,70 +282,82 @@ footer {
 }
 
 .caution {
-  color: #edca6e;
-  font-size: 9px;
+  color: #a85305;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .answer-text {
+  margin: 19px 0 28px;
+  color: #233447;
+  font-size: 17px;
+  line-height: 1.7;
   white-space: pre-wrap;
-  color: #e7efeb;
-  font: 400 17px / 1.75 'Libre Baskerville', Georgia, serif;
-  margin: 21px 0 28px;
+}
+
+.citations,
+.evidence-panel,
+.debug-panel {
+  border-top: 1px solid #c5dff9;
 }
 
 .citations {
-  border-top: 1px solid #294542;
   padding-top: 16px;
 }
 
 .citations p {
-  color: #78918b;
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   margin: 0 0 10px;
+  color: #2275bb;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .citations div {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
 }
 
 .citations a,
 .citations div > span {
-  color: #cae9bd;
-  border: 1px solid #426461;
+  border: 1px solid #93c4f8;
+  border-radius: 4px;
+  color: #ef851f;
+  font-size: 12px;
   text-decoration: none;
   padding: 7px 9px;
-  border-radius: 2px;
-  font-size: 10px;
 }
 
 .citations a:hover {
-  border-color: #a7e536;
+  border-color: #ef851f;
 }
 
 .citations a span {
-  color: #a7e536;
+  color: #2275bb;
 }
 
 .evidence-panel,
 .debug-panel {
-  border-top: 1px solid #294542;
   margin-top: 17px;
+}
+
+.debug-panel {
+  margin-top: 0;
 }
 
 .evidence-panel summary,
 .debug-panel summary {
-  list-style: none;
   display: flex;
   justify-content: space-between;
   padding: 15px 0;
-  color: #bcd2c9;
+  color: #2275bb;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  list-style: none;
 }
 
 .evidence-panel summary::-webkit-details-marker,
@@ -313,7 +366,8 @@ footer {
 }
 
 .count {
-  color: #718f87;
+  color: #5a7187;
+  font-weight: 400;
 }
 
 .evidence-list {
@@ -322,67 +376,65 @@ footer {
 
 .evidence-item {
   padding: 13px 0;
-  border-top: 1px solid rgba(66, 100, 97, 0.55);
+  border-top: 1px solid #e0edf9;
 }
 
 .evidence-meta {
-  color: #a7e536;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 9px;
   margin-bottom: 8px;
+  color: #31b852;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 
 .evidence-item strong {
-  color: #dbece4;
-  font-size: 11px;
+  color: #233447;
+  font-size: 14px;
 }
 
 .evidence-item p,
 .empty-copy {
-  color: #9fb5ae;
-  font: 400 13px / 1.6 'Libre Baskerville', Georgia, serif;
   margin: 8px 0;
-}
-
-.debug-panel {
-  margin-top: 0;
+  color: #4d6378;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .debug-panel summary span {
-  color: #a7e536;
+  color: #31b852;
 }
 
 .debug-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  background: #294542;
   margin-bottom: 16px;
+  background: #c5dff9;
 }
 
 .debug-grid div {
-  background: #0b2224;
   padding: 12px;
+  background: #f5faff;
 }
 
 .debug-grid span {
   display: block;
-  color: #78918b;
-  font-size: 8px;
-  text-transform: uppercase;
   margin-bottom: 6px;
+  color: #5a7187;
+  font-size: 10px;
+  text-transform: uppercase;
 }
 
 .debug-grid code {
-  color: #d7ead0;
-  font: 10px 'DM Mono', monospace;
+  color: #0218aa;
+  font: 11px 'Roboto Mono', monospace;
   overflow-wrap: anywhere;
 }
 
 .thinking {
+  color: #2275bb;
   text-align: center;
-  color: #b9d8c6;
   animation: reveal 0.3s both;
 }
 
@@ -390,33 +442,33 @@ footer {
   display: inline-block;
   width: 25px;
   height: 25px;
-  border: 2px solid #395c54;
-  border-top-color: #a7e536;
+  border: 3px solid #b4d9fc;
+  border-top-color: #31b852;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 .thinking p {
   margin-top: 14px;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .ellipsis {
-  color: #a7e536;
+  color: #31b852;
 }
 
 .error {
   width: min(600px, 100%);
-  border-left: 2px solid #dc7970;
+  border-left: 4px solid #ef851f;
   padding: 16px 20px;
-  background: rgba(110, 39, 35, 0.16);
-  color: #f2ccc8;
+  background: #fff4e9;
+  color: #7a4008;
 }
 
 .error p {
   margin: 7px 0 0;
-  color: #c59691;
-  font-size: 11px;
+  color: #8e5a28;
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
 
@@ -450,16 +502,33 @@ footer {
   }
 }
 
+@media (max-width: 900px) {
+  .masthead {
+    grid-template-columns: 165px 1fr;
+  }
+
+  .utility-links {
+    display: none;
+  }
+}
+
 @media (max-width: 620px) {
   .shell {
-    padding: 22px 20px 16px;
+    padding: 0 20px 16px;
   }
 
   .masthead {
-    grid-template-columns: 1fr auto;
+    min-height: 78px;
+    margin: 0 -20px;
+    padding: 15px 20px;
+    grid-template-columns: 1fr;
   }
 
-  .masthead > p {
+  .wordmark img {
+    width: 145px;
+  }
+
+  .masthead nav {
     display: none;
   }
 
@@ -472,18 +541,18 @@ footer {
   }
 
   .welcome h1 {
-    font-size: 43px;
+    font-size: 38px;
+  }
+
+  .intro {
+    font-size: 16px;
   }
 
   .answer-text {
-    font-size: 15px;
+    font-size: 16px;
   }
 
   .debug-grid {
     grid-template-columns: 1fr;
-  }
-
-  .starters {
-    margin-inline: -2px;
   }
 }

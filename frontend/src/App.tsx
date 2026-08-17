@@ -91,26 +91,32 @@ export default function App() {
   return (
     <main className="shell">
       <header className="masthead">
-        <a className="wordmark" href="/" aria-label="E3SM Assist home">
-          <span className="mark">E3</span>SM-ASSIST
+        <a className="wordmark" href="https://e3sm.org/" aria-label="E3SM home">
+          <img src="https://e3sm.org/wp-content/themes/e3sm/assets/images/e3sm-logo-decade.png" alt="E3SM" />
         </a>
-        <p>Scientific grounding for Earth system questions</p>
-        <span className="status">
-          <i /> Research mode
-        </span>
+        <nav aria-label="E3SM resources">
+          <a href="https://e3sm.org/about/">About</a>
+          <a href="https://e3sm.org/resources/model/">Model</a>
+          <a href="https://e3sm.org/resources/data/">Data</a>
+          <a href="https://e3sm.org/tools/">Tools</a>
+        </nav>
+        <div className="utility-links">
+          <a href="https://docs.e3sm.org/">E3SM Docs</a>
+          <span>AI Assistant</span>
+        </div>
       </header>
 
       <section className={`stage ${response ? 'has-response' : ''}`} aria-live="polite">
         {!response && !loading && !error && (
           <div className="welcome">
-            <p className="eyebrow">E3SM knowledge assistant</p>
+            <p className="eyebrow">Energy Exascale Earth System Model</p>
             <h1>
-              Ask into the
+              E3SM knowledge
               <br />
-              <em>Earth system.</em>
+              <em>assistant</em>
             </h1>
             <p className="intro">
-              Get a clear, source-linked answer from E3SM documentation and research material.
+              Ask questions about the model, its data, and Earth system science. Answers are grounded in E3SM documentation and research material.
             </p>
           </div>
         )}
@@ -177,6 +183,12 @@ export default function App() {
             rows={2}
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault()
+                event.currentTarget.form?.requestSubmit()
+              }
+            }}
             placeholder="Ask a question about E3SM..."
           />
           <button
@@ -195,7 +207,7 @@ export default function App() {
           ))}
         </div>
       </section>
-      <footer>Answers are grounded in retrieved material. Verify details in the linked sources.</footer>
+      <footer>Answers are grounded in retrieved material. Verify details in the linked sources. <a href="https://e3sm.org/">Visit e3sm.org</a></footer>
     </main>
   )
 }

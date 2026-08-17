@@ -24,4 +24,18 @@ describe('App', () => {
     screen.getByText('Evidence').click()
     expect(screen.getByText('E3SM documentation')).toBeTruthy()
   })
+
+  it('submits a question when Enter is pressed', async () => {
+    const { queryAssistant } = await import('./api')
+    vi.mocked(queryAssistant).mockResolvedValue({
+      answer: 'A grounded answer.', citations: [], route: 'documentation', insufficient_evidence: false,
+      evidence: [],
+    })
+    render(<App />)
+    const input = screen.getByLabelText('Ask E3SM-ASSIST a question')
+    fireEvent.change(input, { target: { value: 'Question' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+
+    expect(queryAssistant).toHaveBeenCalledWith('Question')
+  })
 })
