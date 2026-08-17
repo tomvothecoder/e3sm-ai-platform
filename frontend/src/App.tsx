@@ -8,6 +8,12 @@ const starters = [
   'Explain the role of MPAS in E3SM.',
 ]
 
+function generationModeLabel(mode: QueryResponse['generation_mode']) {
+  if (mode === 'llm') return 'LLM response'
+  if (mode === 'deterministic_fallback') return 'Deterministic fallback'
+  return 'Deterministic response'
+}
+
 function EvidencePanel({ response }: { response: QueryResponse }) {
   const evidence = response.evidence
 
@@ -140,7 +146,12 @@ export default function App() {
           <article className="answer-card">
             <div className="answer-topline">
               <span className="eyebrow">E3SM-ASSIST</span>
-              {response.insufficient_evidence && <span className="caution">Limited evidence</span>}
+              <div className="answer-statuses">
+                <span className={`generation-mode ${response.generation_mode ?? 'deterministic'}`}>
+                  {generationModeLabel(response.generation_mode)}
+                </span>
+                {response.insufficient_evidence && <span className="caution">Limited evidence</span>}
+              </div>
             </div>
             <div className="answer-text">{response.answer}</div>
             {response.citations.length > 0 && (

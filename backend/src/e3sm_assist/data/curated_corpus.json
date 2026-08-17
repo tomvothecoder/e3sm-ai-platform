@@ -13,7 +13,7 @@
   {
     "source_id": "user-guide-cases",
     "title": "E3SM User Guide: Cases",
-    "url": "https://docs.e3sm.org/E3SM/user-guide/cases/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/",
     "section": "Cases",
     "component": "User Guide",
     "version": "latest",
@@ -24,7 +24,7 @@
   {
     "source_id": "user-guide:compsets",
     "title": "E3SM User Guide: Compsets",
-    "url": "https://docs.e3sm.org/E3SM/user-guide/compsets/",
+    "url": "https://docs.e3sm.org/E3SM/user-guide/#supported-coupled-compsets",
     "section": "Compsets",
     "component": "User Guide",
     "version": "latest",
@@ -35,7 +35,7 @@
   {
     "source_id": "user-guide-grids",
     "title": "E3SM User Guide: Grids",
-    "url": "https://docs.e3sm.org/E3SM/user-guide/grids/",
+    "url": "https://docs.e3sm.org/E3SM/user-guide/#supported-resolution",
     "section": "Grids",
     "component": "User Guide",
     "version": "latest",
@@ -46,7 +46,7 @@
   {
     "source_id": "running-guide:create-newcase",
     "title": "Running E3SM: create_newcase",
-    "url": "https://docs.e3sm.org/E3SM/user-guide/running-e3sm/create-newcase/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/",
     "section": "Create a case",
     "component": "Running E3SM",
     "version": "latest",
@@ -57,7 +57,7 @@
   {
     "source_id": "running-guide:case-setup",
     "title": "Running E3SM: case.setup",
-    "url": "https://docs.e3sm.org/E3SM/user-guide/running-e3sm/case-setup/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/",
     "section": "Setup",
     "component": "Running E3SM",
     "version": "latest",
@@ -68,7 +68,7 @@
   {
     "source_id": "running-case-build",
     "title": "Running E3SM: case.build",
-    "url": "https://docs.e3sm.org/E3SM/user-guide/running-e3sm/case-build/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/",
     "section": "Build",
     "component": "Running E3SM",
     "version": "latest",
@@ -79,7 +79,7 @@
   {
     "source_id": "running-guide:run-and-submit",
     "title": "Running E3SM: case.submit",
-    "url": "https://docs.e3sm.org/E3SM/user-guide/running-e3sm/case-submit/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/",
     "section": "Submit",
     "component": "Running E3SM",
     "version": "latest",
@@ -90,7 +90,7 @@
   {
     "source_id": "running-xmlchange",
     "title": "Running E3SM: XML Changes",
-    "url": "https://docs.e3sm.org/E3SM/user-guide/running-e3sm/xmlchange/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/",
     "section": "XML configuration",
     "component": "Running E3SM",
     "version": "latest",
@@ -101,7 +101,7 @@
   {
     "source_id": "user-guide:namelists",
     "title": "Running E3SM: Namelists",
-    "url": "https://docs.e3sm.org/E3SM/user-guide/running-e3sm/namelists/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/",
     "section": "Namelists",
     "component": "Running E3SM",
     "version": "latest",
@@ -112,7 +112,7 @@
   {
     "source_id": "running-restarts",
     "title": "Running E3SM: Restarts",
-    "url": "https://docs.e3sm.org/E3SM/user-guide/running-e3sm/restarts/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/",
     "section": "Restarts",
     "component": "Running E3SM",
     "version": "latest",
@@ -123,7 +123,7 @@
   {
     "source_id": "user-guide:history-output",
     "title": "Running E3SM: Output and Archives",
-    "url": "https://docs.e3sm.org/E3SM/user-guide/running-e3sm/output/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/",
     "section": "Output",
     "component": "Running E3SM",
     "version": "latest",
@@ -145,7 +145,7 @@
   {
     "source_id": "eam:configuration",
     "title": "EAM Documentation: Physics",
-    "url": "https://docs.e3sm.org/E3SM/EAM/tech-guide/physics/",
+    "url": "https://docs.e3sm.org/E3SM/EAM/tech-guide/",
     "section": "Physics parameterizations",
     "component": "EAM",
     "version": "latest",
@@ -156,7 +156,7 @@
   {
     "source_id": "eam-history",
     "title": "EAM Documentation: History Output",
-    "url": "https://docs.e3sm.org/E3SM/EAM/tech-guide/history/",
+    "url": "https://docs.e3sm.org/E3SM/EAM/user-guide/namelist_parameters/",
     "section": "History output",
     "component": "EAM",
     "version": "latest",
@@ -178,7 +178,7 @@
   {
     "source_id": "eamxx:configuration",
     "title": "EAMxx Documentation: Input YAML",
-    "url": "https://docs.e3sm.org/E3SM/EAMxx/user/input-files/",
+    "url": "https://docs.e3sm.org/E3SM/EAMxx/user/model_configuration/",
     "section": "Input files",
     "component": "EAMxx",
     "version": "latest",
@@ -189,7 +189,7 @@
   {
     "source_id": "eamxx-diagnostics",
     "title": "EAMxx Documentation: Diagnostics",
-    "url": "https://docs.e3sm.org/E3SM/EAMxx/user/diagnostics/",
+    "url": "https://docs.e3sm.org/E3SM/EAMxx/user/diags/",
     "section": "Diagnostics",
     "component": "EAMxx",
     "version": "latest",
@@ -211,7 +211,7 @@
   {
     "source_id": "elm-surface-data",
     "title": "ELM Documentation: Surface Data",
-    "url": "https://docs.e3sm.org/E3SM/ELM/user-guide/surface-data/",
+    "url": "https://docs.e3sm.org/E3SM/ELM/user-guide/",
     "section": "Surface datasets",
     "component": "ELM",
     "version": "latest",
@@ -222,7 +222,7 @@
   {
     "source_id": "elm-parameters",
     "title": "ELM Documentation: Parameters",
-    "url": "https://docs.e3sm.org/E3SM/ELM/user-guide/parameters/",
+    "url": "https://docs.e3sm.org/E3SM/ELM/user-guide/",
     "section": "Parameters",
     "component": "ELM",
     "version": "latest",
@@ -233,7 +233,7 @@
   {
     "source_id": "elm-history",
     "title": "ELM Documentation: History Output",
-    "url": "https://docs.e3sm.org/E3SM/ELM/user-guide/history-fields/",
+    "url": "https://docs.e3sm.org/E3SM/ELM/user-guide/",
     "section": "History fields",
     "component": "ELM",
     "version": "latest",
@@ -255,7 +255,7 @@
   {
     "source_id": "diagnostics-parameters",
     "title": "E3SM Diagnostics: Parameters",
-    "url": "https://docs.e3sm.org/e3sm_diags/_build/html/main/parameters.html",
+    "url": "https://docs.e3sm.org/e3sm_diags/_build/html/main/defining-parameters.html",
     "section": "Parameter files",
     "component": "Diagnostics",
     "version": "latest",
@@ -266,7 +266,7 @@
   {
     "source_id": "diagnostics-run",
     "title": "E3SM Diagnostics: Running Diagnostics",
-    "url": "https://docs.e3sm.org/e3sm_diags/_build/html/main/run.html",
+    "url": "https://docs.e3sm.org/e3sm_diags/_build/html/main/config-run.html",
     "section": "Running diagnostics",
     "component": "Diagnostics",
     "version": "latest",
@@ -277,7 +277,7 @@
   {
     "source_id": "diagnostics-viewer",
     "title": "E3SM Diagnostics: Viewer",
-    "url": "https://docs.e3sm.org/e3sm_diags/_build/html/main/viewer.html",
+    "url": "https://docs.e3sm.org/e3sm_diags/_build/html/main/dev_guide/using-output-viewer.html",
     "section": "Viewer",
     "component": "Diagnostics",
     "version": "latest",
@@ -288,7 +288,7 @@
   {
     "source_id": "e3sm-unified:overview",
     "title": "E3SM-Unified: Overview",
-    "url": "https://e3sm-project.github.io/e3sm-unified/main/",
+    "url": "https://docs.e3sm.org/e3sm-unified/main/",
     "section": "Overview",
     "component": "E3SM-Unified",
     "version": "latest",
@@ -299,7 +299,7 @@
   {
     "source_id": "e3sm-unified:activation",
     "title": "E3SM-Unified: Activation",
-    "url": "https://e3sm-project.github.io/e3sm-unified/main/installation.html",
+    "url": "https://docs.e3sm.org/e3sm-unified/main/quickstart.html",
     "section": "Installation and activation",
     "component": "E3SM-Unified",
     "version": "latest",
@@ -310,7 +310,7 @@
   {
     "source_id": "e3sm-unified:tools",
     "title": "E3SM-Unified: Included Tools",
-    "url": "https://e3sm-project.github.io/e3sm-unified/main/packages.html",
+    "url": "https://docs.e3sm.org/e3sm-unified/main/packages.html",
     "section": "Packages",
     "component": "E3SM-Unified",
     "version": "latest",
@@ -321,7 +321,7 @@
   {
     "source_id": "e3sm-unified:troubleshooting",
     "title": "E3SM-Unified: Troubleshooting",
-    "url": "https://e3sm-project.github.io/e3sm-unified/main/troubleshooting.html",
+    "url": "https://docs.e3sm.org/e3sm-unified/main/troubleshooting.html",
     "section": "Troubleshooting",
     "component": "E3SM-Unified",
     "version": "latest",

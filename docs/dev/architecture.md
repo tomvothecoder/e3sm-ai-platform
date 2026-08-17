@@ -46,6 +46,45 @@ optional in-memory implementation.
 Raw candidate evidence may appear in debug metadata for gap responses, but it is
 labeled unverified and is not returned as accepted evidence or citations.
 
+## Candidate ranking and evidence acceptance
+
+The default `InMemoryVectorStore` retrieves up to `max(top_k, 8)` candidates,
+sorts them by descending score, and uses `chunk_id` to break score ties
+deterministically. `top_k` defaults to 4.
+
+Each candidate score is composed of:
+
+```text
+cosine similarity
++ (query-term coverage x 0.45)
++ metadata matches (0.035 each)
++ targeted phrase bonuses
+```
+
+Query-term coverage is the share of normalized, expanded query terms found in a
+candidate's source ID, title, section, component, or text. Normalization removes
+common stopwords, and a small synonym map expands related terms such as
+`compset` and `compsets`.
+
+A candidate is accepted as curated evidence only when it has official authority,
+coverage of at least `0.18`, and a score of at least `0.11`. Requests matching
+unsupported-intent phrases accept no evidence. To keep an answer coherent, an
+accepted candidate must share a matched term with the top accepted candidate,
+unless it has coverage of at least `0.34`. The final accepted set is capped at
+the requested `top_k`.
+
+The router selects the `curated` path only when accepted evidence exists and its
+top score is at least `0.12`. Otherwise, routing rules may select an explicit
+insufficient-evidence, web, or future operational path.
+
+### Score display
+
+The frontend currently displays `score * 100` as a match percentage. This is a
+retrieval score, not a probability or confidence percentage: metadata and
+phrase bonuses can raise it above `1.0`, and therefore above 100%. A true
+percentage should use `coverage * 100`; for example, 67% coverage means that
+two-thirds of the normalized query terms appear in the evidence.
+
 ## Routing and generation
 
 The exposed route values are:

@@ -28,6 +28,7 @@ export type Evidence = {
 export type QueryResponse = {
   answer: string
   route?: string
+  generation_mode?: 'deterministic' | 'llm' | 'deterministic_fallback'
   citations: Citation[]
   evidence: Evidence[]
   insufficient_evidence?: boolean
@@ -36,6 +37,7 @@ export type QueryResponse = {
 type RawQueryResponse = {
   answer?: unknown
   route?: unknown
+  generation_mode?: unknown
   citations?: unknown
   retrieved_evidence?: unknown
   evidence?: unknown
@@ -110,6 +112,9 @@ export function normalizeQueryResponse(payload: unknown): QueryResponse {
   return {
     answer: text(response.answer) ?? '',
     route: text(response.route),
+    generation_mode: response.generation_mode === 'deterministic' || response.generation_mode === 'llm' || response.generation_mode === 'deterministic_fallback'
+      ? response.generation_mode
+      : undefined,
     citations: Array.isArray(response.citations) ? response.citations.filter((item): item is Citation => record(item) !== undefined) : [],
     evidence: Array.isArray(rawEvidence) ? rawEvidence.map(normalizeEvidence).filter((item): item is Evidence => item !== null) : [],
     insufficient_evidence: response.insufficient_evidence === true,

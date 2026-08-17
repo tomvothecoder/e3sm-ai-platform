@@ -17,6 +17,14 @@ class RouteName(StrEnum):
     INSUFFICIENT_EVIDENCE = "insufficient_evidence"
 
 
+class GenerationMode(StrEnum):
+    """Resolved response generation method exposed to API consumers."""
+
+    DETERMINISTIC = "deterministic"
+    LLM = "llm"
+    DETERMINISTIC_FALLBACK = "deterministic_fallback"
+
+
 ROUTE_ALIASES: dict[RouteName, str] = {
     RouteName.CURATED_RAG: "curated_rag",
     RouteName.WEB_SEARCH: "web_search",
@@ -96,6 +104,7 @@ class QueryResponse(BaseModel):
     evidence: list[Evidence] = Field(default_factory=list)
     retrieved_evidence: list[RetrievedEvidence] = Field(default_factory=list)
     insufficient_evidence: bool = False
+    generation_mode: GenerationMode = GenerationMode.DETERMINISTIC
     debug: dict[str, Any] = Field(default_factory=dict)
 
     @field_serializer("debug")

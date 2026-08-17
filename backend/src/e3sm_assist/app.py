@@ -91,6 +91,7 @@ class AssistService:
                     reason=decision.reason,
                 )
                 generate_span.set_attribute("generation.route", response.route.value)
+                generate_span.set_attribute("generation.mode", response.generation_mode.value)
                 generate_span.set_attribute(
                     "generation.provider_fallback", bool(response.debug.get("livai_fallback"))
                 )

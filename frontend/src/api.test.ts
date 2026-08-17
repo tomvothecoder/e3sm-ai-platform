@@ -10,6 +10,7 @@ describe('normalizeQueryResponse', () => {
     const response = normalizeQueryResponse({
       answer: 'Grounded answer.',
       route: 'literature',
+      generation_mode: 'llm',
       retrieved_evidence: [{
         title: 'Canonical passage', content: 'A retrieved passage.', score: 0.82,
         source: { title: 'E3SM reference guide', url: 'https://example.org/guide' },
@@ -23,6 +24,7 @@ describe('normalizeQueryResponse', () => {
       sourceLabel: 'E3SM reference guide', sourceUrl: 'https://example.org/guide',
     }])
     expect(response.citations).toHaveLength(1)
+    expect(response.generation_mode).toBe('llm')
   })
 })
 
@@ -38,6 +40,7 @@ describe('queryAssistant', () => {
       answer: 'Grounded answer.',
       citations: [],
       evidence: [{ content: 'Retrieved passage.', sourceLabel: 'E3SM docs', sourceUrl: undefined, title: undefined, score: undefined }],
+      generation_mode: undefined,
       insufficient_evidence: false,
       route: undefined,
     })

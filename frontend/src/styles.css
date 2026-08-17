@@ -281,6 +281,33 @@ footer a {
   margin: 0;
 }
 
+.answer-statuses {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.generation-mode {
+  border-radius: 12px;
+  padding: 4px 8px;
+  background: #e8f4ff;
+  color: #2275bb;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.generation-mode.llm {
+  background: #ebfaef;
+  color: #168c35;
+}
+
+.generation-mode.deterministic_fallback {
+  background: #fff4e9;
+  color: #a85305;
+}
+
 .caution {
   color: #a85305;
   font-size: 12px;

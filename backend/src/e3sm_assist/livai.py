@@ -11,7 +11,7 @@ from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from e3sm_assist.generation import generate_response
-from e3sm_assist.models import Evidence, QueryResponse, RouteName
+from e3sm_assist.models import Evidence, GenerationMode, QueryResponse, RouteName
 from e3sm_assist.settings import Settings
 
 # Deterministic context bound so prompts cannot grow without limit as corpus/retrieval expands.
@@ -125,6 +125,7 @@ class LivAIEvidenceGenerator:
         try:
             answer = self.client.complete(build_livai_messages(question, evidence))
         except Exception as exc:
+            fallback.generation_mode = GenerationMode.DETERMINISTIC_FALLBACK
             fallback.debug["livai_fallback"] = True
             fallback.debug["livai_error"] = "provider_error"
             if isinstance(exc, LivAIProviderError):
@@ -132,6 +133,7 @@ class LivAIEvidenceGenerator:
             return fallback
 
         fallback.answer = answer + "\n\nI have not added claims beyond the cited E3SM sources."
+        fallback.generation_mode = GenerationMode.LLM
         fallback.debug["livai_used"] = True
         return fallback
 

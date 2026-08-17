@@ -25,7 +25,7 @@ from e3sm_assist.livai import (
     build_generator,
     build_livai_messages,
 )
-from e3sm_assist.models import Evidence, QueryRequest, RouteName, SourceMetadata
+from e3sm_assist.models import Evidence, GenerationMode, QueryRequest, RouteName, SourceMetadata
 from e3sm_assist.settings import (
     DEFAULT_LIVAI_BASE_URL,
     DEFAULT_LIVAI_MODEL,
@@ -232,6 +232,7 @@ def test_livai_generator_preserves_server_citations_and_evidence() -> None:
     assert response.citations[0].source_id == "user-guide:compsets"
     assert response.retrieved_evidence[0].source_id == "user-guide:compsets"
     assert response.evidence[0].chunk_id == "user-guide:compsets#chunk-1"
+    assert response.generation_mode is GenerationMode.LLM
     assert response.debug["livai_used"] is True
 
 
@@ -243,6 +244,7 @@ def test_livai_failure_falls_back_to_deterministic_cited_answer() -> None:
     assert "Based on the curated E3SM evidence" in response.answer
     assert response.citations[0].source_id == "user-guide:compsets"
     assert response.retrieved_evidence[0].source_id == "user-guide:compsets"
+    assert response.generation_mode is GenerationMode.DETERMINISTIC_FALLBACK
     assert response.debug["livai_fallback"] is True
     assert response.debug["livai_error"] == "provider_error"
 
@@ -270,4 +272,5 @@ def test_service_uses_deterministic_default_without_livai_key(clear_livai_env: N
     response = service.query(QueryRequest(question="How do I choose an E3SM compset?"))
 
     assert "Based on the curated E3SM evidence" in response.answer
+    assert response.generation_mode is GenerationMode.DETERMINISTIC
     assert "livai_used" not in response.debug

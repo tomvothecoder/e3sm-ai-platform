@@ -14,8 +14,29 @@ def test_load_curated_corpus_has_representative_official_entries() -> None:
     assert expected.issubset({entry.component for entry in entries})
     assert "E3SM-Unified" in {entry.component for entry in entries}
     assert all(entry.authority == "official" for entry in entries)
-    official_prefixes = ("https://docs.e3sm.org/", "https://e3sm-project.github.io/")
-    assert all(str(entry.url).startswith(official_prefixes) for entry in entries)
+    assert all(str(entry.url).startswith("https://docs.e3sm.org/") for entry in entries)
+
+
+def test_curated_corpus_excludes_retired_documentation_routes() -> None:
+    retired_paths = (
+        "/E3SM/user-guide/cases/",
+        "/E3SM/user-guide/compsets/",
+        "/E3SM/user-guide/grids/",
+        "/E3SM/user-guide/running-e3sm/",
+        "/E3SM/EAM/tech-guide/physics/",
+        "/E3SM/EAM/tech-guide/history/",
+        "/E3SM/EAMxx/user/input-files/",
+        "/E3SM/EAMxx/user/diagnostics/",
+        "/E3SM/ELM/user-guide/surface-data/",
+        "/E3SM/ELM/user-guide/parameters/",
+        "/E3SM/ELM/user-guide/history-fields/",
+        "/e3sm_diags/_build/html/main/parameters.html",
+        "/e3sm_diags/_build/html/main/run.html",
+        "/e3sm_diags/_build/html/main/viewer.html",
+        "/e3sm-unified/main/installation.html",
+    )
+
+    assert not any(path in str(entry.url) for entry in load_corpus() for path in retired_paths)
 
 
 def test_chunk_entry_is_deterministic_and_preserves_source_metadata() -> None:

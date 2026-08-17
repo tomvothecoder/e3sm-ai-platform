@@ -13,6 +13,7 @@ describe('App', () => {
     const { queryAssistant } = await import('./api')
     vi.mocked(queryAssistant).mockResolvedValue({
       answer: 'A grounded answer.', citations: [], route: 'documentation', insufficient_evidence: false,
+      generation_mode: 'llm',
       evidence: [{ content: 'Retrieved context.', sourceLabel: 'E3SM documentation', sourceUrl: 'https://example.org/docs' }],
     })
     render(<App />)
@@ -20,6 +21,7 @@ describe('App', () => {
     fireEvent.change(input, { target: { value: 'Question' } })
     fireEvent.click(screen.getByRole('button', { name: 'Send question' }))
     expect(await screen.findByText('A grounded answer.')).toBeTruthy()
+    expect(screen.getByText('LLM response')).toBeTruthy()
     expect(screen.getByText('1 retrieved')).toBeTruthy()
     screen.getByText('Evidence').click()
     expect(screen.getByText('E3SM documentation')).toBeTruthy()
