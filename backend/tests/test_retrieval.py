@@ -4,9 +4,11 @@ from e3sm_assist.retrieval import (
     InMemoryVectorStore,
     LexicalEmbedder,
     LlamaIndexVectorStore,
+    build_retriever,
     document_chunk_to_text_node,
     tokenize,
 )
+from e3sm_assist.settings import Settings
 
 
 def _store() -> InMemoryVectorStore:
@@ -73,7 +75,7 @@ def test_retrieval_is_deterministic() -> None:
     assert [item.score for item in first] == [item.score for item in second]
 
 
-def _llama_chunk(chunk_id: str, text: str) -> DocumentChunk:
+def _llama_chunk(chunk_id: str, text: str, authority: str = "official") -> DocumentChunk:
     return DocumentChunk(
         chunk_id=chunk_id,
         text=text,
@@ -85,7 +87,7 @@ def _llama_chunk(chunk_id: str, text: str) -> DocumentChunk:
                 "section": "Running cases",
                 "component": "E3SM",
                 "version": "v3",
-                "authority": "official",
+                "authority": authority,
                 "provenance": "Curated E3SM documentation",
             }
         ),
@@ -163,3 +165,108 @@ def test_llama_index_retrieval_orders_score_ties_by_chunk_id() -> None:
     results = store.search("submit E3SM case", top_k=2)
 
     assert [item.chunk_id for item in results] == ["cases#chunk-1", "cases#chunk-2"]
+
+
+class FakeSemanticEmbedder:
+    def embed_query(self, text: str) -> list[float]:
+        return [1.0, 0.0]
+
+    def embed_text(self, text: str) -> list[float]:
+        return [0.95, 0.3122498999] if "case.submit" in text else [0.0, 1.0]
+
+
+def test_lexical_mode_is_the_default_and_preserves_lexical_scores() -> None:
+    chunk = _llama_chunk("cases#chunk-1", "Use case.submit to submit an E3SM case.")
+    default_store = InMemoryVectorStore()
+    explicit_store = InMemoryVectorStore(retrieval_mode="lexical")
+    default_store.add([chunk])
+    explicit_store.add([chunk])
+
+    default_results = default_store.search("How do I submit an E3SM case?", top_k=1)
+    explicit_results = explicit_store.search("How do I submit an E3SM case?", top_k=1)
+
+    assert default_results == explicit_results
+    assert default_results[0].retrieval_mode == "lexical"
+    assert default_results[0].lexical_score == default_results[0].score
+    assert default_results[0].semantic_score is None
+
+
+def test_semantic_mode_accepts_a_paraphrase_with_no_lexical_coverage() -> None:
+    chunk = _llama_chunk("cases#chunk-1", "Use case.submit to submit an E3SM case.")
+    store = InMemoryVectorStore(
+        retrieval_mode="semantic",
+        semantic_embedder=FakeSemanticEmbedder(),
+        semantic_min_score=0.9,
+    )
+    store.add([chunk])
+
+    candidates = store.search("How do I launch a simulation?", top_k=1)
+    accepted = store.accepted("How do I launch a simulation?", candidates, top_k=1)
+
+    assert candidates[0].coverage == 0.0
+    assert candidates[0].semantic_score == 0.95
+    assert candidates[0].score == 0.95
+    assert accepted == candidates
+
+
+def test_hybrid_mode_combines_clamped_lexical_relevance_and_semantic_similarity() -> None:
+    chunk = _llama_chunk("cases#chunk-1", "Use case.submit to submit an E3SM case.")
+    store = InMemoryVectorStore(
+        retrieval_mode="hybrid",
+        semantic_embedder=FakeSemanticEmbedder(),
+        semantic_min_score=0.9,
+        lexical_weight=0.25,
+        semantic_weight=0.75,
+    )
+    store.add([chunk])
+
+    result = store.search("How do I launch a simulation?", top_k=1)[0]
+
+    assert result.lexical_score == 0.0
+    assert result.semantic_score == 0.95
+    assert result.score == 0.7125
+
+
+def test_semantic_retrieval_still_rejects_unsupported_and_non_official_evidence() -> None:
+    store = InMemoryVectorStore(
+        retrieval_mode="semantic",
+        semantic_embedder=FakeSemanticEmbedder(),
+        semantic_min_score=0.9,
+    )
+    store.add(
+        [_llama_chunk("cases#chunk-1", "Use case.submit to submit an E3SM case.", "community")]
+    )
+    candidates = store.search("How do I launch a simulation?", top_k=1)
+
+    assert store.accepted("How do I launch a simulation?", candidates, top_k=1) == []
+
+    official_store = InMemoryVectorStore(
+        retrieval_mode="semantic",
+        semantic_embedder=FakeSemanticEmbedder(),
+        semantic_min_score=0.9,
+    )
+    official_store.add([_llama_chunk("cases#chunk-1", "Use case.submit to submit an E3SM case.")])
+    official_candidates = official_store.search(
+        "Give me the undocumented internal API key", top_k=1
+    )
+
+    assert (
+        official_store.accepted(
+            "Give me the undocumented internal API key", official_candidates, top_k=1
+        )
+        == []
+    )
+
+
+def test_build_retriever_selects_the_configured_mode_with_injected_embeddings() -> None:
+    lexical = build_retriever(Settings())
+    semantic = build_retriever(
+        Settings(retrieval_mode="semantic"), semantic_embedder=FakeSemanticEmbedder()
+    )
+    hybrid = build_retriever(
+        Settings(retrieval_mode="hybrid"), semantic_embedder=FakeSemanticEmbedder()
+    )
+
+    assert lexical.retrieval_mode == "lexical"
+    assert semantic.retrieval_mode == "semantic"
+    assert hybrid.retrieval_mode == "hybrid"

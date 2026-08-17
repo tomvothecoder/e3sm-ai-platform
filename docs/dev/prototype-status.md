@@ -8,12 +8,21 @@ guides linked from [../README.md](../README.md).
 
 - Python 3.13 `uv` workspace with `backend` and `evaluation` members, plus a
   separate React/Vite frontend package.
-- FastAPI `POST /query` service with deterministic ingestion, chunking, lexical retrieval, evidence-constrained generation, citations, provenance, and debug information.
+- FastAPI `POST /query` service with deterministic ingestion, chunking, and
+  configurable lexical, semantic, or hybrid retrieval; lexical mode remains the
+  offline-safe default. The service returns evidence-constrained generation,
+  citations, provenance, and debug information.
 - A curated 31-entry corpus covering the E3SM User Guide, Running E3SM, EAM, EAMxx, ELM, E3SM Diagnostics, and E3SM-Unified.
 - Deterministic route selection: curated documentation, web-information-needed,
   future operational/tool-data-needed, and explicit insufficient-evidence
   responses.
-- Provider-independent interfaces for embedders, stores, rerankers, hybrid retrieval, web sources, and operational sources; constructor injection allows replacement without a framework.
+- Hugging Face embeddings for opt-in semantic and hybrid retrieval, with
+  configurable model name, relevance threshold, and hybrid weights. Official
+  authority, unsupported-intent rejection, citations, provenance, and explicit
+  insufficient-evidence behavior apply in every retrieval mode.
+- Provider-independent interfaces for embedders, stores, rerankers, hybrid
+  retrieval, web sources, and operational sources; constructor injection allows
+  replacement without a framework.
 - Evaluation-compatible response fields (`route`, `retrieved_evidence`, citation provenance) and a packaged evaluator at `e3sm_assist.evaluation_adapter:evaluate`.
 - React/Vite chat UI with loading/error states, citations, expandable evidence, and a debug route/source view.
 - Local integration support through the Vite `/query` proxy and configurable FastAPI CORS (`E3SM_ASSIST_CORS_ALLOW_ORIGINS`).

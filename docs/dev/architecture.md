@@ -21,7 +21,7 @@ application service wires these stages:
 
 1. Load the bundled static curated corpus JSON.
 2. Chunk entries deterministically while preserving citation metadata.
-3. Retrieve lexical candidates with an in-memory store.
+3. Retrieve lexical, semantic, or hybrid candidates with an in-memory store.
 4. Filter accepted curated evidence separately from raw candidates.
 5. Select a deterministic route.
 6. Generate either an evidence-constrained answer or an explicit
@@ -37,11 +37,19 @@ the E3SM User Guide, Running E3SM, EAM, EAMxx, ELM, E3SM Diagnostics, and
 E3SM-Unified. Each record retains source ID, title, URL, section, component,
 version, authority, provenance, and text.
 
-Retrieval is deterministic and local. The default store uses lexical
-term-frequency vectors, scoring, metadata bonuses, phrase bonuses, and an
-acceptance policy requiring meaningful query coverage, score, and official
-authority. A deterministic LlamaIndex-backed lexical store also exists as an
-optional in-memory implementation.
+Retrieval defaults to deterministic, local lexical term-frequency vectors. This
+offline-safe mode does not initialize or download an embedding model. Its
+scoring, metadata bonuses, phrase bonuses, and acceptance policy require
+meaningful query coverage, score, and official authority. A deterministic
+LlamaIndex-backed lexical store also exists as an optional in-memory
+implementation.
+
+Set `E3SM_ASSIST_RETRIEVAL_MODE` to `semantic` or `hybrid` to enable dense
+retrieval through `llama-index-embeddings-huggingface`. The service constructs
+the configured `E3SM_ASSIST_EMBEDDING_MODEL` only in those modes; it defaults to
+`BAAI/bge-small-en-v1.5`. The model is downloaded by Hugging Face on its first
+use unless already cached. Tests inject a `SemanticEmbedder` rather than loading
+a model.
 
 Raw candidate evidence may appear in debug metadata for gap responses, but it is
 labeled unverified and is not returned as accepted evidence or citations.
@@ -50,7 +58,8 @@ labeled unverified and is not returned as accepted evidence or citations.
 
 The default `InMemoryVectorStore` retrieves up to `max(top_k, 8)` candidates,
 sorts them by descending score, and uses `chunk_id` to break score ties
-deterministically. `top_k` defaults to 4.
+deterministically. `top_k` defaults to 4. Semantic and hybrid modes retain the
+same tie-breaker and source metadata.
 
 Each candidate score is composed of:
 
@@ -73,17 +82,41 @@ accepted candidate must share a matched term with the top accepted candidate,
 unless it has coverage of at least `0.34`. The final accepted set is capped at
 the requested `top_k`.
 
+Semantic mode ranks by dense cosine similarity. It can accept an official
+paraphrase with low lexical coverage only when `semantic_score` meets
+`E3SM_ASSIST_RETRIEVAL_SEMANTIC_MIN_SCORE` (default `0.7`). Hybrid mode computes
+the deterministic weighted average below, where lexical relevance is the
+lexical score clamped to `[0, 1]` and semantic relevance is cosine similarity
+clamped at zero:
+
+```text
+hybrid_score = (
+  lexical_weight * clamp(lexical_score, 0, 1)
+  + semantic_weight * max(semantic_score, 0)
+) / (lexical_weight + semantic_weight)
+```
+
+The weights default to `0.5` each and are configured with
+`E3SM_ASSIST_RETRIEVAL_LEXICAL_WEIGHT` and
+`E3SM_ASSIST_RETRIEVAL_SEMANTIC_WEIGHT`. Hybrid acceptance permits either the
+existing lexical gate or the calibrated semantic threshold, but never bypasses
+official authority, unsupported-intent rejection, citation provenance, or
+explicit insufficient-evidence behavior. The lexical thresholds remain
+configurable as `E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_COVERAGE` and
+`E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_SCORE`.
+
 The router selects the `curated` path only when accepted evidence exists and its
 top score is at least `0.12`. Otherwise, routing rules may select an explicit
 insufficient-evidence, web, or future operational path.
 
-### Score display
+### Evidence metadata and score display
 
-The frontend currently displays `score * 100` as a match percentage. This is a
-retrieval score, not a probability or confidence percentage: metadata and
-phrase bonuses can raise it above `1.0`, and therefore above 100%. A true
-percentage should use `coverage * 100`; for example, 67% coverage means that
-two-thirds of the normalized query terms appear in the evidence.
+Every evidence record includes `retrieval_mode`, `score`, `lexical_score`,
+`semantic_score`, and `coverage` where applicable. Scores are relevance values,
+not probabilities or confidence percentages. The frontend displays the primary
+value as a retrieval score and labels `coverage * 100` as lexical coverage; for
+example, 67% coverage means that two-thirds of the normalized query terms appear
+in the evidence.
 
 ## Routing and generation
 
