@@ -70,6 +70,27 @@ an `insufficient_evidence` flag, and debug metadata. Current route values are:
 Curated answers include citation provenance and avoid adding claims beyond the
 accepted evidence. Non-curated routes return no accepted evidence or citations.
 
+## Answer process
+
+E3SM-ASSIST uses retrieval-augmented generation (RAG) to:
+
+1. Search the curated E3SM documentation corpus for relevant passages.
+2. Rank top candidates with the configured retrieval mode. The default
+   offline-safe `lexical` mode uses lexical similarity, query-term coverage,
+   metadata matches, and E3SM-specific phrase boosts. Optional `semantic` mode
+   uses Hugging Face embeddings, and `hybrid` mode deterministically combines
+   lexical relevance with semantic similarity.
+3. Filter candidates to official, sufficiently relevant, and mutually coherent
+   evidence. Semantic matches must meet the configured semantic threshold;
+   unsupported requests are rejected in every mode.
+4. Pass accepted evidence to the deterministic generator or optional LLM before
+   producing a cited answer. If no evidence passes the safeguards, return an
+   explicit insufficient-evidence response.
+
+Retrieval scores and semantic similarity values are relevance signals, not
+confidence percentages. See [developer setup](../dev/setup.md) for retrieval
+mode, model, weight, and threshold configuration.
+
 ## Optional LivAI generation
 
 Deterministic generation is the default. To opt into LivAI for answers that

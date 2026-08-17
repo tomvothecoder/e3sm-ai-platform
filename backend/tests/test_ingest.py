@@ -39,6 +39,22 @@ def test_curated_corpus_excludes_retired_documentation_routes() -> None:
     assert not any(path in str(entry.url) for entry in load_corpus() for path in retired_paths)
 
 
+def test_running_guide_citations_use_current_topic_specific_pages() -> None:
+    entries_by_id = {entry.source_id: str(entry.url) for entry in load_corpus()}
+    prior_to_production = "https://docs.e3sm.org/running-e3sm-guide/guide-prior-to-production/"
+    production = "https://docs.e3sm.org/running-e3sm-guide/guide-production/"
+    post_processing = "https://docs.e3sm.org/running-e3sm-guide/guide-post-processing/"
+
+    assert entries_by_id["running-guide:create-newcase"] == prior_to_production
+    assert entries_by_id["running-guide:case-setup"] == prior_to_production
+    assert entries_by_id["running-case-build"] == prior_to_production
+    assert entries_by_id["running-guide:run-and-submit"] == production
+    assert entries_by_id["running-xmlchange"] == production
+    assert entries_by_id["user-guide:namelists"] == prior_to_production
+    assert entries_by_id["running-restarts"] == production
+    assert entries_by_id["user-guide:history-output"] == post_processing
+
+
 def test_chunk_entry_is_deterministic_and_preserves_source_metadata() -> None:
     entry = CorpusEntry(
         source_id="sample",
