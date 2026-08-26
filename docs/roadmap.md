@@ -7,8 +7,8 @@ prototype. It is not a claim that these capabilities exist today.
 
 1. Replace the in-memory lexical store with a durable vector store such as
    pgvector while preserving deterministic tests as the regression baseline.
-2. Add hybrid lexical/vector retrieval and reranking behind the existing
-   provider-independent interfaces.
+2. Add reranking to the implemented hybrid lexical/vector retrieval behind the
+   existing provider-independent interfaces.
 3. Expand the curated corpus with versioned source snapshots, automated
    ingestion, freshness checks, and human relevance review.
 4. Publish corpus snapshot identifiers and retrieval/chunking/scoring policy

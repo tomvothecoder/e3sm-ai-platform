@@ -13,7 +13,7 @@
   {
     "source_id": "user-guide-cases",
     "title": "E3SM User Guide: Cases",
-    "url": "https://docs.e3sm.org/running-e3sm-guide/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/guide-prior-to-production/",
     "section": "Cases",
     "component": "User Guide",
     "version": "latest",
@@ -46,7 +46,7 @@
   {
     "source_id": "running-guide:create-newcase",
     "title": "Running E3SM: create_newcase",
-    "url": "https://docs.e3sm.org/running-e3sm-guide/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/guide-prior-to-production/",
     "section": "Create a case",
     "component": "Running E3SM",
     "version": "latest",
@@ -57,7 +57,7 @@
   {
     "source_id": "running-guide:case-setup",
     "title": "Running E3SM: case.setup",
-    "url": "https://docs.e3sm.org/running-e3sm-guide/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/guide-prior-to-production/",
     "section": "Setup",
     "component": "Running E3SM",
     "version": "latest",
@@ -68,7 +68,7 @@
   {
     "source_id": "running-case-build",
     "title": "Running E3SM: case.build",
-    "url": "https://docs.e3sm.org/running-e3sm-guide/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/guide-prior-to-production/",
     "section": "Build",
     "component": "Running E3SM",
     "version": "latest",
@@ -79,7 +79,7 @@
   {
     "source_id": "running-guide:run-and-submit",
     "title": "Running E3SM: case.submit",
-    "url": "https://docs.e3sm.org/running-e3sm-guide/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/guide-production/",
     "section": "Submit",
     "component": "Running E3SM",
     "version": "latest",
@@ -90,7 +90,7 @@
   {
     "source_id": "running-xmlchange",
     "title": "Running E3SM: XML Changes",
-    "url": "https://docs.e3sm.org/running-e3sm-guide/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/guide-production/",
     "section": "XML configuration",
     "component": "Running E3SM",
     "version": "latest",
@@ -101,7 +101,7 @@
   {
     "source_id": "user-guide:namelists",
     "title": "Running E3SM: Namelists",
-    "url": "https://docs.e3sm.org/running-e3sm-guide/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/guide-prior-to-production/",
     "section": "Namelists",
     "component": "Running E3SM",
     "version": "latest",
@@ -112,7 +112,7 @@
   {
     "source_id": "running-restarts",
     "title": "Running E3SM: Restarts",
-    "url": "https://docs.e3sm.org/running-e3sm-guide/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/guide-production/",
     "section": "Restarts",
     "component": "Running E3SM",
     "version": "latest",
@@ -123,7 +123,7 @@
   {
     "source_id": "user-guide:history-output",
     "title": "Running E3SM: Output and Archives",
-    "url": "https://docs.e3sm.org/running-e3sm-guide/",
+    "url": "https://docs.e3sm.org/running-e3sm-guide/guide-post-processing/",
     "section": "Output",
     "component": "Running E3SM",
     "version": "latest",

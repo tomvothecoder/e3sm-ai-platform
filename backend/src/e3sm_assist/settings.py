@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 
 DEFAULT_LIVAI_BASE_URL = "https://livai-api.llnl.gov/"
 DEFAULT_LIVAI_MODEL = "gpt-5.5"
+DEFAULT_EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
+RETRIEVAL_MODES = frozenset({"lexical", "semantic", "hybrid"})
 
 
 @dataclass(frozen=True)
@@ -25,6 +27,31 @@ class Settings:
     deployment_environment: str = "development"
     otlp_endpoint: str | None = None
     otlp_headers: tuple[tuple[str, str], ...] = ()
+    retrieval_mode: str = "lexical"
+    embedding_model: str = DEFAULT_EMBEDDING_MODEL
+    retrieval_lexical_min_coverage: float = 0.18
+    retrieval_lexical_min_score: float = 0.11
+    retrieval_semantic_min_score: float = 0.7
+    retrieval_lexical_weight: float = 0.5
+    retrieval_semantic_weight: float = 0.5
+
+    def __post_init__(self) -> None:
+        """Validate retrieval configuration independently of environment loading."""
+        if self.retrieval_mode not in RETRIEVAL_MODES:
+            modes = ", ".join(sorted(RETRIEVAL_MODES))
+            raise ValueError(f"retrieval_mode must be one of: {modes}")
+        if not self.embedding_model.strip():
+            raise ValueError("embedding_model must not be empty")
+        if not 0.0 <= self.retrieval_lexical_min_coverage <= 1.0:
+            raise ValueError("retrieval_lexical_min_coverage must be between 0 and 1")
+        if self.retrieval_lexical_min_score < 0.0:
+            raise ValueError("retrieval_lexical_min_score must be non-negative")
+        if not -1.0 <= self.retrieval_semantic_min_score <= 1.0:
+            raise ValueError("retrieval_semantic_min_score must be between -1 and 1")
+        if self.retrieval_lexical_weight < 0.0 or self.retrieval_semantic_weight < 0.0:
+            raise ValueError("retrieval weights must be non-negative")
+        if self.retrieval_lexical_weight + self.retrieval_semantic_weight == 0.0:
+            raise ValueError("at least one retrieval weight must be positive")
 
     @property
     def livai_enabled(self) -> bool:
@@ -57,4 +84,17 @@ def load_settings(load_dotenv_file: bool = True) -> Settings:
         deployment_environment=os.getenv("E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT", "development"),
         otlp_endpoint=os.getenv("E3SM_ASSIST_OTLP_ENDPOINT") or None,
         otlp_headers=headers,
+        retrieval_mode=os.getenv("E3SM_ASSIST_RETRIEVAL_MODE", "lexical").lower(),
+        embedding_model=os.getenv("E3SM_ASSIST_EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL),
+        retrieval_lexical_min_coverage=float(
+            os.getenv("E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_COVERAGE", "0.18")
+        ),
+        retrieval_lexical_min_score=float(
+            os.getenv("E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_SCORE", "0.11")
+        ),
+        retrieval_semantic_min_score=float(
+            os.getenv("E3SM_ASSIST_RETRIEVAL_SEMANTIC_MIN_SCORE", "0.7")
+        ),
+        retrieval_lexical_weight=float(os.getenv("E3SM_ASSIST_RETRIEVAL_LEXICAL_WEIGHT", "0.5")),
+        retrieval_semantic_weight=float(os.getenv("E3SM_ASSIST_RETRIEVAL_SEMANTIC_WEIGHT", "0.5")),
     )
