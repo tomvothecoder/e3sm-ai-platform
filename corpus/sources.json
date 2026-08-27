@@ -1,0 +1,78 @@
+{
+  "manifest_version": 1,
+  "status": "initially-approved-acquisition-scope",
+  "sources": [
+    {
+      "id": "E3SM",
+      "identity": "E3SM model source and documentation",
+      "owner": "E3SM Project",
+      "canonical_url": "https://docs.e3sm.org/",
+      "repository_url": "https://github.com/E3SM-Project/E3SM",
+      "license_url": "https://github.com/E3SM-Project/E3SM/blob/master/LICENSE",
+      "access": "Publicly accessible upstream source; acquire only through an operator-initiated capture.",
+      "redistribution": "BSD-3-Clause terms apply; retain required license and attribution notices with redistributed material.",
+      "refresh_cadence": "quarterly or when an approved release requires it",
+      "request_interval_seconds": 1,
+      "path_scope": {
+        "include": ["README.md", "docs/**"],
+        "exclude": ["**/build/**", "**/_build/**", "**/.git/**"]
+      },
+      "document_status": "pending selection and review",
+      "documents": []
+    },
+    {
+      "id": "E3SM-Project.github.io",
+      "identity": "E3SM Project public documentation site source",
+      "owner": "E3SM Project",
+      "canonical_url": "https://e3sm-project.github.io/",
+      "repository_url": "https://github.com/E3SM-Project/E3SM-Project.github.io",
+      "license_url": "https://github.com/E3SM-Project/E3SM-Project.github.io/blob/master/LICENSE",
+      "access": "Publicly accessible upstream source; acquire only through an operator-initiated capture.",
+      "redistribution": "BSD-3-Clause terms apply; retain required license and attribution notices with redistributed material.",
+      "refresh_cadence": "quarterly or when an approved site update requires it",
+      "request_interval_seconds": 1,
+      "path_scope": {
+        "include": ["README.md", "docs/**", "**/*.md"],
+        "exclude": ["**/build/**", "**/_build/**", "**/.git/**"]
+      },
+      "document_status": "pending selection and review",
+      "documents": []
+    },
+    {
+      "id": "e3sm_diags",
+      "identity": "E3SM Diagnostics source and documentation",
+      "owner": "E3SM Project",
+      "canonical_url": "https://e3sm-project.github.io/e3sm_diags/",
+      "repository_url": "https://github.com/E3SM-Project/e3sm_diags",
+      "license_url": "https://github.com/E3SM-Project/e3sm_diags/blob/master/LICENSE",
+      "access": "Publicly accessible upstream source; acquire only through an operator-initiated capture.",
+      "redistribution": "BSD-3-Clause terms apply; retain required license and attribution notices with redistributed material.",
+      "refresh_cadence": "quarterly or when an approved release requires it",
+      "request_interval_seconds": 1,
+      "path_scope": {
+        "include": ["README.md", "docs/**"],
+        "exclude": ["**/build/**", "**/_build/**", "**/.git/**"]
+      },
+      "document_status": "pending selection and review",
+      "documents": []
+    },
+    {
+      "id": "e3sm-unified",
+      "identity": "E3SM-Unified workflow source and documentation",
+      "owner": "E3SM Project",
+      "canonical_url": "https://github.com/E3SM-Project/e3sm-unified",
+      "repository_url": "https://github.com/E3SM-Project/e3sm-unified",
+      "license_url": "https://github.com/E3SM-Project/e3sm-unified/blob/master/LICENSE",
+      "access": "Publicly accessible upstream source; acquire only through an operator-initiated capture.",
+      "redistribution": "BSD-3-Clause terms apply; retain required license and attribution notices with redistributed material.",
+      "refresh_cadence": "quarterly or when an approved release requires it",
+      "request_interval_seconds": 1,
+      "path_scope": {
+        "include": ["README.md", "docs/**"],
+        "exclude": ["**/build/**", "**/_build/**", "**/.git/**"]
+      },
+      "document_status": "pending selection and review",
+      "documents": []
+    }
+  ]
+}

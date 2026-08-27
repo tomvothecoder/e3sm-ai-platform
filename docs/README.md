@@ -16,6 +16,8 @@ prototype, focused on E3SM-ASSIST.
 - [Roadmap](roadmap.md): planned implementation areas and known gaps.
 - [Observability](dev/observability.md): canonical observability guidance and
   local tracing workflow.
+- [Corpus curation](dev/corpus-curation.md): approved acquisition scope and
+  offline operator workflow; no runtime integration yet.
 
 ## Status and historical documents
 

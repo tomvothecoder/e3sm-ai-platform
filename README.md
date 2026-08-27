@@ -113,6 +113,7 @@ and threshold details.
 - [Architecture](docs/dev/architecture.md)
 - [Evaluation](docs/dev/evaluation.md)
 - [Observability](docs/dev/observability.md) — includes the optional local tracing workflow.
+- [Corpus curation](docs/dev/corpus-curation.md) — approved source scope and offline curation workflow.
 - [Prototype status](docs/dev/prototype-status.md)
 - [Roadmap](docs/roadmap.md)
 
