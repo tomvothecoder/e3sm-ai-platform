@@ -160,7 +160,80 @@ class ChangeSet(BaseModel):
     unchanged: list[CorpusRecord] = Field(default_factory=list)
 
 
-def normalize_markdown(content: str | bytes) -> str:
+def validate_source_scope(scope: SourceScope | Path | str) -> list[str]:
+    """Return offline policy failures for an acquisition scope or its JSON path."""
+    try:
+        parsed = _load_source_scope(scope) if isinstance(scope, (Path, str)) else scope
+    except CurationValidationError as error:
+        return [str(error)]
+
+    return _source_scope_failures(parsed)
+
+
+def capture(manifest_path: Path | str, output_root: Path | str) -> Snapshot:
+    """Create a standalone local snapshot from a local approved manifest."""
+    manifest_file = Path(manifest_path)
+    manifest = _load_manifest(manifest_file)
+    snapshot, contents = _build_snapshot_with_content(manifest, manifest_file.parent)
+    root = Path(output_root)
+    root.mkdir(parents=True, exist_ok=True)
+
+    for source in manifest.sources:
+        record = next(item for item in snapshot.records if item.id == source.id)
+        destination = _safe_child(root, record.content_path)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(
+            contents[source.id],
+            encoding="utf-8",
+            newline="\n",
+        )
+
+    _write_artifacts(root, snapshot)
+
+    return snapshot
+
+
+def refresh(
+    snapshot_root: Path | str,
+    manifest_path: Path | str,
+    candidate_root: Path | str,
+) -> ChangeSet:
+    """Capture a separate candidate root and write its deterministic changes file."""
+    baseline = _load_snapshot(Path(snapshot_root))
+    candidate = capture(manifest_path, candidate_root)
+    changes = _compare_records(baseline.records, candidate.records)
+    _write_json(Path(candidate_root) / "changes.json", changes.model_dump(mode="json"))
+
+    return changes
+
+
+def validate_corpus(root: Path | str, *, require_approved: bool = False) -> list[str]:
+    """Return all offline validation failures for a corpus artifact root."""
+    root = Path(root)
+    failures: list[str] = []
+    snapshot = _try_load(root / "snapshot.json", Snapshot, "snapshot", failures)
+    catalog = _try_load(root / "catalog.json", Catalog, "catalog", failures)
+    review = _try_load(root / "review.json", ReviewArtifact, "review", failures)
+    if snapshot is None or catalog is None or review is None:
+        return failures
+
+    failures.extend(_record_failures(snapshot.records, root))
+    if snapshot.records != catalog.records:
+        failures.append("catalog records do not match snapshot records")
+    if review.snapshot_sha256 != _file_sha256(root / "snapshot.json"):
+        failures.append("review snapshot hash mismatch")
+    if review.catalog_sha256 != _file_sha256(root / "catalog.json"):
+        failures.append("review catalog hash mismatch")
+    expected_hashes = {record.id: record.sha256 for record in snapshot.records}
+    if review.record_hashes != expected_hashes:
+        failures.append("review record hashes do not match snapshot")
+    if require_approved and not review.approved:
+        failures.append("review is not approved")
+
+    return failures
+
+
+def _normalize_markdown(content: str | bytes) -> str:
     """Decode UTF-8 and normalize only line endings, trailing space, and EOF."""
     if isinstance(content, bytes):
         content = content.decode("utf-8")
@@ -168,12 +241,12 @@ def normalize_markdown(content: str | bytes) -> str:
     return "\n".join(line.rstrip(" \t") for line in content.split("\n")).rstrip("\n") + "\n"
 
 
-def content_sha256(content: str | bytes) -> str:
+def _content_sha256(content: str | bytes) -> str:
     """Return the SHA-256 digest of normalized UTF-8 Markdown content."""
-    return hashlib.sha256(normalize_markdown(content).encode("utf-8")).hexdigest()
+    return hashlib.sha256(_normalize_markdown(content).encode("utf-8")).hexdigest()
 
 
-def load_source_scope(path: Path | str) -> SourceScope:
+def _load_source_scope(path: Path | str) -> SourceScope:
     """Load and validate an offline acquisition scope, such as ``sources.json``.
 
     A source scope approves where a later operator may acquire from.  It is not
@@ -183,27 +256,13 @@ def load_source_scope(path: Path | str) -> SourceScope:
     failures = _source_scope_failures(scope)
     if failures:
         raise CurationValidationError("; ".join(failures))
+
     return scope
 
 
-def validate_source_scope(scope: SourceScope | Path | str) -> list[str]:
-    """Return offline policy failures for an acquisition scope or its JSON path."""
-    try:
-        parsed = load_source_scope(scope) if isinstance(scope, (Path, str)) else scope
-    except CurationValidationError as error:
-        return [str(error)]
-    return _source_scope_failures(parsed)
-
-
-def load_manifest(path: Path | str) -> SourceManifest:
+def _load_manifest(path: Path | str) -> SourceManifest:
     """Load the separate pinned local capture manifest required by :func:`capture`."""
     return _load_model(Path(path), SourceManifest, "manifest")
-
-
-def build_snapshot(manifest: SourceManifest, manifest_root: Path | str) -> Snapshot:
-    """Read only local manifest inputs and construct a sorted content snapshot."""
-    snapshot, _ = _build_snapshot_with_content(manifest, Path(manifest_root))
-    return snapshot
 
 
 def _build_snapshot_with_content(
@@ -218,7 +277,7 @@ def _build_snapshot_with_content(
     for source in sorted(manifest.sources, key=lambda item: item.id):
         input_path = _safe_child(root, source.content_path)
         try:
-            normalized = normalize_markdown(input_path.read_bytes())
+            normalized = _normalize_markdown(input_path.read_bytes())
         except UnicodeDecodeError as error:
             raise CurationValidationError(f"invalid UTF-8 content for {source.id}") from error
         contents[source.id] = normalized
@@ -230,90 +289,31 @@ def _build_snapshot_with_content(
                 license=source.license,
                 policy=source.policy,
                 content_path=f"content/{source.id}.md",
-                sha256=content_sha256(normalized),
+                sha256=_content_sha256(normalized),
                 title=source.title,
             )
         )
+
     return Snapshot(records=records), contents
 
 
-def capture(manifest_path: Path | str, output_root: Path | str) -> Snapshot:
-    """Create a standalone local snapshot from a local approved manifest."""
-    manifest_file = Path(manifest_path)
-    manifest = load_manifest(manifest_file)
-    snapshot, contents = _build_snapshot_with_content(manifest, manifest_file.parent)
-    root = Path(output_root)
-    root.mkdir(parents=True, exist_ok=True)
-    for source in manifest.sources:
-        record = next(item for item in snapshot.records if item.id == source.id)
-        destination = _safe_child(root, record.content_path)
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_text(
-            contents[source.id],
-            encoding="utf-8",
-            newline="\n",
-        )
-    _write_artifacts(root, snapshot)
-    return snapshot
-
-
-def compare_records(baseline: list[CorpusRecord], candidate: list[CorpusRecord]) -> ChangeSet:
+def _compare_records(baseline: list[CorpusRecord], candidate: list[CorpusRecord]) -> ChangeSet:
     """Classify records by ID and full record value in deterministic ID order."""
     old = {record.id: record for record in baseline}
     new = {record.id: record for record in candidate}
-    return ChangeSet(
+    changes = ChangeSet(
         added=[new[key] for key in sorted(new.keys() - old.keys())],
         changed=[new[key] for key in sorted(new.keys() & old.keys()) if new[key] != old[key]],
         removed=[old[key] for key in sorted(old.keys() - new.keys())],
         unchanged=[new[key] for key in sorted(new.keys() & old.keys()) if new[key] == old[key]],
     )
 
-
-def refresh(
-    snapshot_root: Path | str, manifest_path: Path | str, candidate_root: Path | str
-) -> ChangeSet:
-    """Capture a separate candidate root and write its deterministic changes file."""
-    baseline = load_snapshot(Path(snapshot_root))
-    candidate = capture(manifest_path, candidate_root)
-    changes = compare_records(baseline.records, candidate.records)
-    _write_json(Path(candidate_root) / "changes.json", changes.model_dump(mode="json"))
     return changes
 
 
-def load_snapshot(root: Path | str) -> Snapshot:
+def _load_snapshot(root: Path | str) -> Snapshot:
     """Load a snapshot artifact from a corpus root."""
     return _load_model(Path(root) / "snapshot.json", Snapshot, "snapshot")
-
-
-def validate_corpus(root: Path | str, *, require_approved: bool = False) -> list[str]:
-    """Return all offline validation failures for a corpus artifact root."""
-    root = Path(root)
-    failures: list[str] = []
-    snapshot = _try_load(root / "snapshot.json", Snapshot, "snapshot", failures)
-    catalog = _try_load(root / "catalog.json", Catalog, "catalog", failures)
-    review = _try_load(root / "review.json", ReviewArtifact, "review", failures)
-    if snapshot is None or catalog is None or review is None:
-        return failures
-    failures.extend(_record_failures(snapshot.records, root))
-    if snapshot.records != catalog.records:
-        failures.append("catalog records do not match snapshot records")
-    if review.snapshot_sha256 != _file_sha256(root / "snapshot.json"):
-        failures.append("review snapshot hash mismatch")
-    if review.catalog_sha256 != _file_sha256(root / "catalog.json"):
-        failures.append("review catalog hash mismatch")
-    expected_hashes = {record.id: record.sha256 for record in snapshot.records}
-    if review.record_hashes != expected_hashes:
-        failures.append("review record hashes do not match snapshot")
-    if require_approved and not review.approved:
-        failures.append("review is not approved")
-    return failures
-
-
-def require_valid_corpus(root: Path | str, *, require_approved: bool = False) -> None:
-    """Raise when :func:`validate_corpus` detects an invalid corpus artifact."""
-    failures = validate_corpus(root, require_approved=require_approved)
-    if failures:
-        raise CurationValidationError("; ".join(failures))
 
 
 def _write_artifacts(root: Path, snapshot: Snapshot) -> None:
@@ -378,6 +378,7 @@ def _source_scope_failures(scope: SourceScope) -> list[str]:
                 failures.append(f"missing document provenance for {source.id}: {document.id}")
             if _is_unpinned_revision(document.revision):
                 failures.append(f"unpinned document revision for {source.id}: {document.id}")
+
     return failures
 
 
@@ -415,6 +416,7 @@ def _source_failures(manifest: SourceManifest, root: Path) -> list[str]:
                 failures.append(f"missing content file for {source.id}: {source.content_path}")
         except CurationValidationError as error:
             failures.append(f"unsafe content path for {source.id}: {error}")
+
     return failures
 
 
@@ -425,10 +427,11 @@ def _record_failures(records: list[CorpusRecord], root: Path) -> list[str]:
             path = _safe_child(root, record.content_path)
             if not path.is_file():
                 failures.append(f"missing content file for {record.id}: {record.content_path}")
-            elif content_sha256(path.read_bytes()) != record.sha256:
+            elif _content_sha256(path.read_bytes()) != record.sha256:
                 failures.append(f"content hash mismatch for {record.id}")
         except (CurationValidationError, UnicodeDecodeError) as error:
             failures.append(f"broken content for {record.id}: {error}")
+
     return failures
 
 
@@ -453,6 +456,7 @@ def _record_metadata_failures(records: list[Any]) -> list[str]:
             failures.append(f"incomplete provenance or policy for {record.id}")
         if _is_unpinned_revision(str(record.revision)):
             failures.append(f"unpinned revision for {record.id}")
+
     return failures
 
 
@@ -464,6 +468,7 @@ def _safe_child(root: Path, relative: str) -> Path:
     resolved = (resolved_root / path).resolve()
     if not resolved.is_relative_to(resolved_root):
         raise CurationValidationError("path escapes root")
+
     return resolved
 
 

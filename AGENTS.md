@@ -17,4 +17,10 @@
 - Use logical blank-line groupings for imports, setup, core logic, and result construction.
 - Use two blank lines between top-level definitions. Avoid decorative whitespace.
 - Put a blank line before a final `return` only when it separates completed computation from returning a result.
+- Keep a module's intended public functions together near the top, after its public types,
+  and order them by the user-facing workflow.
+- Prefix implementation-only functions with `_`; do not expose internal helpers as public
+  module API without a consumer-driven reason.
+- Apply Ruff formatting and linting to changed Python files, and run `ty` to type-check
+  the affected code before final integration verification.
 - Preserve a final newline in files.

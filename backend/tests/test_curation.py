@@ -1,5 +1,6 @@
 """Focused tests for the offline corpus curation workflow."""
 
+import hashlib
 import json
 from copy import deepcopy
 from pathlib import Path
@@ -9,8 +10,6 @@ import pytest
 from e3sm_assist.curation import (
     CurationValidationError,
     capture,
-    content_sha256,
-    normalize_markdown,
     refresh,
     validate_corpus,
     validate_source_scope,
@@ -40,15 +39,15 @@ def _manifest(tmp_path, *, source_id: str = "guide", content: str = "# Guide\n")
 def test_capture_is_deterministic_and_preserves_markdown_structure(tmp_path):
     """Capture normalizes transport details without changing Markdown fences/headings."""
     content = "# Heading  \r\n\r\n```python\r\nprint('x')  \r\n```\r\n"
-    assert normalize_markdown(content) == "# Heading\n\n```python\nprint('x')\n```\n"
+    normalized = "# Heading\n\n```python\nprint('x')\n```\n"
     manifest = _manifest(tmp_path, content=content)
     first, second = tmp_path / "first", tmp_path / "second"
     capture(manifest, first)
     capture(manifest, second)
     assert (first / "snapshot.json").read_bytes() == (second / "snapshot.json").read_bytes()
-    assert (first / "content/guide.md").read_text() == normalize_markdown(content)
+    assert (first / "content/guide.md").read_text() == normalized
     record = json.loads((first / "snapshot.json").read_text())["records"][0]
-    assert record["sha256"] == content_sha256((first / "content/guide.md").read_bytes())
+    assert record["sha256"] == hashlib.sha256(normalized.encode("utf-8")).hexdigest()
     assert validate_corpus(first) == []
 
 
