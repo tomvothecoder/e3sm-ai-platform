@@ -1,7 +1,12 @@
 # AI Coding Guidance
 
+- Agents may always run pytest, Ruff, ty, and other repository QA tools without
+  requesting permission.
+- Run the full test, formatting, lint, and QA suite once at final integration
+  verification, not after each incremental change; use focused checks earlier
+  only when needed to diagnose a concrete failure.
 - Use Ruff as the formatter and lint checker, and `ty` as the type checker.
-- Run Ruff after edits; it is authoritative.
+- Run Ruff at final integration verification; it is authoritative.
 - Workspace commands:
   - `uv run --all-packages ruff format backend evaluation`
   - `uv run --all-packages ruff check backend evaluation`
