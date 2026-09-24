@@ -23,7 +23,7 @@ class Settings:
     livai_model: str = DEFAULT_LIVAI_MODEL
     livai_base_url: str = DEFAULT_LIVAI_BASE_URL
     cors_allow_origins: tuple[str, ...] = ("http://localhost:5173",)
-    service_name: str = "e3sm-assist"
+    service_name: str = "e3sm-ai-platform-backend"
     deployment_environment: str = "development"
     otlp_endpoint: str | None = None
     otlp_headers: tuple[tuple[str, str], ...] = ()
@@ -64,9 +64,9 @@ def load_settings(load_dotenv_file: bool = True) -> Settings:
     if load_dotenv_file:
         load_dotenv(Path(__file__).parents[2] / ".env", override=False)
 
-    raw_origins = os.getenv("E3SM_ASSIST_CORS_ALLOW_ORIGINS", "http://localhost:5173")
+    raw_origins = os.getenv("E3SM_PLATFORM_CORS_ALLOW_ORIGINS", "http://localhost:5173")
     origins = tuple(origin.strip() for origin in raw_origins.split(",") if origin.strip())
-    raw_headers = os.getenv("E3SM_ASSIST_OTLP_HEADERS", "")
+    raw_headers = os.getenv("E3SM_PLATFORM_OTLP_HEADERS", "")
     headers = tuple(
         (name.strip(), value.strip())
         for item in raw_headers.split(",")
@@ -75,26 +75,28 @@ def load_settings(load_dotenv_file: bool = True) -> Settings:
         if name.strip() and value.strip()
     )
     return Settings(
-        assistant_generator=os.getenv("ASSISTANT_GENERATOR", "deterministic"),
-        livai_api_key=os.getenv("ASSISTANT_LIVAI_API_KEY") or None,
-        livai_model=os.getenv("ASSISTANT_LIVAI_MODEL", DEFAULT_LIVAI_MODEL),
-        livai_base_url=os.getenv("ASSISTANT_LIVAI_BASE_URL", DEFAULT_LIVAI_BASE_URL),
+        assistant_generator=os.getenv("E3SM_PLATFORM_GENERATOR", "deterministic"),
+        livai_api_key=os.getenv("E3SM_PLATFORM_LIVAI_API_KEY") or None,
+        livai_model=os.getenv("E3SM_PLATFORM_LIVAI_MODEL", DEFAULT_LIVAI_MODEL),
+        livai_base_url=os.getenv("E3SM_PLATFORM_LIVAI_BASE_URL", DEFAULT_LIVAI_BASE_URL),
         cors_allow_origins=origins or ("http://localhost:5173",),
-        service_name=os.getenv("E3SM_ASSIST_SERVICE_NAME", "e3sm-assist"),
-        deployment_environment=os.getenv("E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT", "development"),
-        otlp_endpoint=os.getenv("E3SM_ASSIST_OTLP_ENDPOINT") or None,
+        service_name=os.getenv("E3SM_PLATFORM_SERVICE_NAME", "e3sm-ai-platform-backend"),
+        deployment_environment=os.getenv("E3SM_PLATFORM_DEPLOYMENT_ENVIRONMENT", "development"),
+        otlp_endpoint=os.getenv("E3SM_PLATFORM_OTLP_ENDPOINT") or None,
         otlp_headers=headers,
-        retrieval_mode=os.getenv("E3SM_ASSIST_RETRIEVAL_MODE", "lexical").lower(),
-        embedding_model=os.getenv("E3SM_ASSIST_EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL),
+        retrieval_mode=os.getenv("E3SM_PLATFORM_RETRIEVAL_MODE", "lexical").lower(),
+        embedding_model=os.getenv("E3SM_PLATFORM_EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL),
         retrieval_lexical_min_coverage=float(
-            os.getenv("E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_COVERAGE", "0.18")
+            os.getenv("E3SM_PLATFORM_RETRIEVAL_LEXICAL_MIN_COVERAGE", "0.18")
         ),
         retrieval_lexical_min_score=float(
-            os.getenv("E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_SCORE", "0.11")
+            os.getenv("E3SM_PLATFORM_RETRIEVAL_LEXICAL_MIN_SCORE", "0.11")
         ),
         retrieval_semantic_min_score=float(
-            os.getenv("E3SM_ASSIST_RETRIEVAL_SEMANTIC_MIN_SCORE", "0.7")
+            os.getenv("E3SM_PLATFORM_RETRIEVAL_SEMANTIC_MIN_SCORE", "0.7")
         ),
-        retrieval_lexical_weight=float(os.getenv("E3SM_ASSIST_RETRIEVAL_LEXICAL_WEIGHT", "0.5")),
-        retrieval_semantic_weight=float(os.getenv("E3SM_ASSIST_RETRIEVAL_SEMANTIC_WEIGHT", "0.5")),
+        retrieval_lexical_weight=float(os.getenv("E3SM_PLATFORM_RETRIEVAL_LEXICAL_WEIGHT", "0.5")),
+        retrieval_semantic_weight=float(
+            os.getenv("E3SM_PLATFORM_RETRIEVAL_SEMANTIC_WEIGHT", "0.5")
+        ),
     )

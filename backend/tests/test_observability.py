@@ -1,8 +1,12 @@
 import logging
 from pathlib import Path
 
-from e3sm_assist.observability import LOGGER_NAME, JsonFormatter, configure_observability
-from e3sm_assist.settings import Settings
+from e3sm_ai_platform.infrastructure.observability import (
+    LOGGER_NAME,
+    JsonFormatter,
+    configure_observability,
+)
+from e3sm_ai_platform.infrastructure.settings import Settings
 
 
 def test_local_collector_filters_prohibited_trace_attributes_before_batching() -> None:

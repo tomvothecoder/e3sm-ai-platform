@@ -1,12 +1,12 @@
 # Architecture
 
-The current repository is a minimal vertical slice for E3SM-ASSIST. It favors
+The current repository is a minimal vertical slice for E3SM Compass. It favors
 deterministic, provider-independent boundaries over a larger application
 framework.
 
 ## Repository layout
 
-- `backend/`: FastAPI service package `e3sm_assist`.
+- `backend/`: FastAPI service package `e3sm_ai_platform`.
 - `frontend/`: React, TypeScript, and Vite chat UI.
 - `evaluation/`: independent deterministic pytest integration evaluation.
 - `docs/`: canonical guides, status, roadmap, and historical prompt.
@@ -16,7 +16,7 @@ separate npm package.
 
 ## Backend flow
 
-`POST /query` is implemented by the FastAPI app in `e3sm_assist.app`. The
+`POST /query` is implemented by the FastAPI app in `e3sm_ai_platform.api.app`. The
 application service wires these stages:
 
 1. Load the bundled static curated corpus JSON.
@@ -44,9 +44,9 @@ meaningful query coverage, score, and official authority. A deterministic
 LlamaIndex-backed lexical store also exists as an optional in-memory
 implementation.
 
-Set `E3SM_ASSIST_RETRIEVAL_MODE` to `semantic` or `hybrid` to enable dense
+Set `E3SM_PLATFORM_RETRIEVAL_MODE` to `semantic` or `hybrid` to enable dense
 retrieval through `llama-index-embeddings-huggingface`. The service constructs
-the configured `E3SM_ASSIST_EMBEDDING_MODEL` only in those modes; it defaults to
+the configured `E3SM_PLATFORM_EMBEDDING_MODEL` only in those modes; it defaults to
 `BAAI/bge-small-en-v1.5`. The model is downloaded by Hugging Face on its first
 use unless already cached. Tests inject a `SemanticEmbedder` rather than loading
 a model.
@@ -84,7 +84,7 @@ the requested `top_k`.
 
 Semantic mode ranks by dense cosine similarity. It can accept an official
 paraphrase with low lexical coverage only when `semantic_score` meets
-`E3SM_ASSIST_RETRIEVAL_SEMANTIC_MIN_SCORE` (default `0.7`). Hybrid mode computes
+`E3SM_PLATFORM_RETRIEVAL_SEMANTIC_MIN_SCORE` (default `0.7`). Hybrid mode computes
 the deterministic weighted average below, where lexical relevance is the
 lexical score clamped to `[0, 1]` and semantic relevance is cosine similarity
 clamped at zero:
@@ -97,13 +97,13 @@ hybrid_score = (
 ```
 
 The weights default to `0.5` each and are configured with
-`E3SM_ASSIST_RETRIEVAL_LEXICAL_WEIGHT` and
-`E3SM_ASSIST_RETRIEVAL_SEMANTIC_WEIGHT`. Hybrid acceptance permits either the
+`E3SM_PLATFORM_RETRIEVAL_LEXICAL_WEIGHT` and
+`E3SM_PLATFORM_RETRIEVAL_SEMANTIC_WEIGHT`. Hybrid acceptance permits either the
 existing lexical gate or the calibrated semantic threshold, but never bypasses
 official authority, unsupported-intent rejection, citation provenance, or
 explicit insufficient-evidence behavior. The lexical thresholds remain
-configurable as `E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_COVERAGE` and
-`E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_SCORE`.
+configurable as `E3SM_PLATFORM_RETRIEVAL_LEXICAL_MIN_COVERAGE` and
+`E3SM_PLATFORM_RETRIEVAL_LEXICAL_MIN_SCORE`.
 
 The router selects the `curated` path only when accepted evidence exists and its
 top score is at least `0.12`. Otherwise, routing rules may select an explicit

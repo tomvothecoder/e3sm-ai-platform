@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from e3sm_assist.models import (
+from e3sm_ai_platform.domain.models import (
     ROUTE_ALIASES,
     Citation,
     Evidence,

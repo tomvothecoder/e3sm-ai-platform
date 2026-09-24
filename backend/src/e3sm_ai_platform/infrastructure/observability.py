@@ -15,9 +15,9 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
-from e3sm_assist.settings import Settings
+from e3sm_ai_platform.infrastructure.settings import Settings
 
-LOGGER_NAME = "e3sm_assist"
+LOGGER_NAME = "e3sm_ai_platform"
 _configured = False
 _instrumented_apps: set[int] = set()
 
@@ -27,7 +27,7 @@ class JsonFormatter(logging.Formatter):
 
     def __init__(
         self,
-        service_name: str = "e3sm-assist",
+        service_name: str = "e3sm-ai-platform-backend",
         deployment_environment: str = "development",
     ) -> None:
         """Initialize the formatter with the process service identity."""

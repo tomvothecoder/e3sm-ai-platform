@@ -1,14 +1,44 @@
 # E3SM AI Platform
 
-E3SM AI Platform is a provider-independent prototype for **E3SM-ASSIST**: a chat application that answers E3SM questions from a curated local documentation corpus. It prioritizes traceable evidence, citations, and explicit insufficient-evidence responses over unsupported answers. It is a prototype, not a complete E3SM documentation service or production operational assistant.
+E3SM AI Platform is a provider-independent prototype for **E3SM Compass**: a chat application that answers E3SM questions from a curated local documentation corpus. It prioritizes traceable evidence, citations, and explicit insufficient-evidence responses over unsupported answers. It is a prototype, not a complete E3SM documentation service or production operational assistant.
 
 ## Current features
 
-- FastAPI `POST /query` service with deterministic routing, configurable lexical, semantic, or hybrid retrieval, answer generation, citations, provenance, and debug information.
-- Curated 31-entry corpus spanning the E3SM User Guide, Running E3SM, EAM, EAMxx, ELM, Diagnostics, and E3SM-Unified.
-- React, TypeScript, and Vite chat UI with loading/error states, citations, expandable evidence, and route/source debugging.
-- Deterministic evaluation fixtures and provider-independent interfaces for retrieval, generation, web, and operational-source extensions.
-- Optional backend-only LivAI generation for curated-evidence answers; deterministic generation is the default and fallback.
+### RAG and indexing
+
+- Curated 31-entry corpus spanning the E3SM User Guide, Running E3SM, EAM,
+  EAMxx, ELM, Diagnostics, and E3SM-Unified. *(JSON, Pydantic)*
+- Deterministic lexical retrieval by default, with configurable semantic and
+  hybrid retrieval modes. *(LlamaIndex, Hugging Face embeddings)*
+- Evidence acceptance, citations, provenance, and explicit
+  insufficient-evidence responses. *(Pydantic)*
+
+### Backend and generation
+
+- FastAPI `POST /query` service with deterministic routing and response
+  generation. *(FastAPI, Uvicorn)*
+- Optional backend-only LivAI generation for curated-evidence answers; the
+  deterministic generator remains the default and fallback. *(PydanticAI,
+  LivAI)*
+- Provider-independent interfaces for retrieval, generation, web, and
+  operational-source extensions. *(Python protocols)*
+
+### Frontend
+
+- E3SM Compass chat UI with loading and error states, citations, expandable
+  evidence, and route/source debugging. *(React, TypeScript, Vite)*
+
+### Evaluation
+
+- Deterministic evaluation fixtures that validate routing, evidence, and
+  citation behavior. *(pytest)*
+
+### Observability
+
+- Structured request-completion logs, request IDs, and distributed tracing with
+  privacy-preserving telemetry defaults. *(OpenTelemetry, JSON logging)*
+- Optional local trace inspection stack for development. *(OpenTelemetry
+  Collector, Jaeger, Docker Compose)*
 
 ## Prerequisites
 
@@ -55,6 +85,9 @@ make frontend-test frontend-lint frontend-typecheck frontend-build
 make backend-start
 make frontend-start
 
+# Remove generated builds, retrieval data, test and tool caches, and Python bytecode
+make clean
+
 # Manage the optional local observability stack
 make observability-up
 make observability-status
@@ -66,11 +99,31 @@ make observability-down
 
 `frontend/` sends a question to the FastAPI backend's `POST /query` endpoint (the Vite development server proxies relative `/query` requests). The backend deterministically selects a route, retrieves relevant curated evidence when supported, generates an evidence-constrained response, and returns the answer with citations, provenance, route metadata, and debug information. Ingestion is an explicit process: source records are normalized, chunked, embedded through an abstraction, and stored for retrieval; the application does not fetch documentation at request time.
 
+```mermaid
+flowchart LR
+    User[User] --> UI[E3SM Compass frontend<br/>React + Vite]
+    UI -->|POST /query| API[FastAPI API<br/>e3sm_ai_platform.api]
+
+    subgraph Platform[E3SM AI Platform backend]
+        API --> Service[Compass service]
+        Service --> Router[Deterministic router]
+        Service --> Retrieval[Retrieval and evidence acceptance]
+        Retrieval --> Corpus[Curated E3SM corpus<br/>JSON package resource]
+        Router --> Generation[Response generation]
+        Retrieval --> Generation
+        Generation --> Response[Cited response]
+    end
+
+    Generation -. optional .-> LivAI[LivAI<br/>PydanticAI]
+    Response --> UI
+    API -. traces and logs .-> Telemetry[OpenTelemetry<br/>optional Collector + Jaeger]
+```
+
 Available routes are curated documentation, opt-in web-search fallback, future operational/tool sources, and explicit insufficient evidence. Web and operational connectors are extension points and are not enabled by default.
 
 ### Answer process
 
-E3SM-ASSIST uses retrieval-augmented generation (RAG) to:
+E3SM Compass uses retrieval-augmented generation (RAG) to:
 
 1. Search the curated E3SM documentation corpus for relevant passages.
 2. Rank candidates with the configured retrieval mode. Offline-safe `lexical`

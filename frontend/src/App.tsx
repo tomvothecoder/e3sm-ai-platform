@@ -223,7 +223,7 @@ export default function App() {
         {response && (
           <article className="answer-card">
             <div className="answer-topline">
-              <span className="eyebrow">E3SM-ASSIST</span>
+              <span className="eyebrow">E3SM Compass</span>
               <div className="answer-statuses">
                 <span className={`generation-mode ${response.generation_mode ?? 'deterministic'}`}>
                   {generationModeLabel(response.generation_mode)}
@@ -265,7 +265,7 @@ export default function App() {
       <section className="query-area">
         <form onSubmit={submit}>
           <label className="sr-only" htmlFor="question">
-            Ask E3SM-ASSIST a question
+            Ask E3SM Compass a question
           </label>
           <textarea
             id="question"

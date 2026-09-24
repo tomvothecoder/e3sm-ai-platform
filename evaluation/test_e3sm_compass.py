@@ -1,4 +1,4 @@
-"""Deterministic black-box checks for the E3SM-ASSIST response contract."""
+"""Deterministic black-box checks for the E3SM Compass response contract."""
 
 from __future__ import annotations
 

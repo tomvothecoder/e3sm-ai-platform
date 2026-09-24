@@ -5,7 +5,7 @@ from __future__ import annotations
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from e3sm_assist.ingest import load_corpus
+from e3sm_ai_platform.knowledge.corpus import load_corpus
 
 
 def main() -> int:
@@ -17,7 +17,7 @@ def main() -> int:
         if url in checked:
             continue
         checked.add(url)
-        request = Request(url, headers={"User-Agent": "e3sm-assist-link-audit"})
+        request = Request(url, headers={"User-Agent": "e3sm-platform-link-audit"})
         try:
             with urlopen(request, timeout=20) as response:  # noqa: S310
                 if 200 <= response.status < 400:

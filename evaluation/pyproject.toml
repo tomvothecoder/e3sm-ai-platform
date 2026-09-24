@@ -1,13 +1,12 @@
 [project]
-name = "e3sm-assist-evaluation"
+name = "e3sm-compass-evaluation"
 version = "0.1.0"
-description = "Independent deterministic evaluation for E3SM-ASSIST."
+description = "Independent deterministic evaluation for E3SM Compass."
 requires-python = ">=3.13"
 dependencies = []
 
 [dependency-groups]
 dev = [
-  "mypy>=1.17.0",
   "pytest>=8.4.0",
   "ruff>=0.12.0",
 ]
