@@ -22,9 +22,9 @@ delivered features; this document focuses on durable operating guidance.
   FastAPI instrumentation, internal spans around query/retrieval/acceptance/
   routing/generation, JSON request-completion logs with an allow-listed field
   set, and a server-generated `X-Request-ID` response header.
-- Startup emits the effective non-secret configuration, including inference,
-  retrieval, CORS, service, and OTLP settings. API keys and OTLP header values
-  are never logged.
+- Startup displays a human-readable summary of the effective non-secret
+  configuration, including inference, retrieval, CORS, service, and OTLP
+  settings. API keys and OTLP header values are never logged.
 - The frontend sends a W3C `traceparent` header for `/query` requests and can
   display the returned `X-Request-ID` in generic error messages.
 - OTLP trace export is disabled unless the backend is explicitly configured with

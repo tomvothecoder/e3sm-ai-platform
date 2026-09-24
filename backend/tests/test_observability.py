@@ -1,4 +1,3 @@
-import json
 import logging
 from pathlib import Path
 
@@ -6,6 +5,7 @@ from e3sm_ai_platform.infrastructure.observability import (
     LOGGER_NAME,
     JsonFormatter,
     configure_observability,
+    format_startup_configuration,
     startup_configuration,
 )
 from e3sm_ai_platform.infrastructure.settings import Settings
@@ -25,7 +25,7 @@ def test_local_collector_filters_prohibited_trace_attributes_before_batching() -
 
 def test_configure_observability_uses_configured_log_identity() -> None:
     logger = logging.getLogger(LOGGER_NAME)
-    original_formatters = [handler.formatter for handler in logger.handlers]
+    original_formatters = {handler: handler.formatter for handler in logger.handlers}
     settings = Settings(service_name="observability-test", deployment_environment="test")
 
     try:
@@ -39,7 +39,10 @@ def test_configure_observability_uses_configured_log_identity() -> None:
         assert formatter.service_name == "observability-test"
         assert formatter.deployment_environment == "test"
     finally:
-        for handler, formatter in zip(logger.handlers, original_formatters, strict=True):
+        for handler in list(logger.handlers):
+            if handler not in original_formatters:
+                logger.removeHandler(handler)
+        for handler, formatter in original_formatters.items():
             handler.setFormatter(formatter)
 
 
@@ -55,16 +58,17 @@ def test_startup_configuration_excludes_secrets() -> None:
     )
 
     configuration = startup_configuration(settings)
+    summary = format_startup_configuration(settings)
     record = logging.LogRecord(
         LOGGER_NAME,
         logging.INFO,
         __file__,
         0,
-        "backend.startup.configuration",
+        summary,
         (),
         None,
     )
-    record.configuration = configuration
+    record.human_readable = True
     rendered = JsonFormatter().format(record)
 
     assert configuration["inference_backend"] == "livai"
@@ -72,4 +76,7 @@ def test_startup_configuration_excludes_secrets() -> None:
     assert configuration["otlp_headers_configured"] is True
     assert "secret-key" not in rendered
     assert "secret-token" not in rendered
-    assert json.loads(rendered)["configuration"] == configuration
+    assert rendered == summary
+    assert "E3SM AI Platform startup configuration" in rendered
+    assert "Backend: livai" in rendered
+    assert "OTLP headers: configured" in rendered

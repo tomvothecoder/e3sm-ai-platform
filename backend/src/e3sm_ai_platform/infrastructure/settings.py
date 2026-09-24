@@ -12,6 +12,7 @@ DEFAULT_LIVAI_BASE_URL = "https://livai-api.llnl.gov/"
 DEFAULT_LIVAI_MODEL = "gpt-5.5"
 DEFAULT_EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
 RETRIEVAL_MODES = frozenset({"lexical", "semantic", "hybrid"})
+ENV_FILE = Path(__file__).parents[3] / ".env"
 
 
 @dataclass(frozen=True)
@@ -62,7 +63,7 @@ class Settings:
 def load_settings(load_dotenv_file: bool = True) -> Settings:
     """Load settings from environment, optionally reading backend/.env if present."""
     if load_dotenv_file:
-        load_dotenv(Path(__file__).parents[2] / ".env", override=False)
+        load_dotenv(ENV_FILE, override=False)
 
     raw_origins = os.getenv("CORS_ALLOW_ORIGINS", "http://localhost:5173")
     origins = tuple(origin.strip() for origin in raw_origins.split(",") if origin.strip())

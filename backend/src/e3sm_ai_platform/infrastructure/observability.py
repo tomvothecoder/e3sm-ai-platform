@@ -37,6 +37,9 @@ class JsonFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """Format a log record without serializing arbitrary record attributes."""
+        if getattr(record, "human_readable", False):
+            return record.getMessage()
+
         context = trace.get_current_span().get_span_context()
         payload: dict[str, object] = {
             "event": record.getMessage(),
@@ -59,7 +62,6 @@ class JsonFormatter(logging.Formatter):
             "http_status_code",
             "duration_ms",
             "outcome",
-            "configuration",
         ):
             value = getattr(record, field, None)
             if value is not None:
@@ -114,9 +116,40 @@ def get_logger() -> logging.Logger:
 
 
 def log_startup_configuration(settings: Settings) -> None:
-    """Log the effective non-secret configuration once during application startup."""
-    get_logger().info(
-        "backend.startup.configuration", extra={"configuration": startup_configuration(settings)}
+    """Display the effective non-secret configuration once during application startup."""
+    get_logger().info(format_startup_configuration(settings), extra={"human_readable": True})
+
+
+def format_startup_configuration(settings: Settings) -> str:
+    """Format effective non-secret settings as a human-readable startup summary."""
+    cors_origins = ", ".join(settings.cors_allow_origins)
+    otlp_endpoint = settings.otlp_endpoint or "disabled"
+    otlp_headers = "configured" if settings.otlp_headers else "not configured"
+
+    return "\n".join(
+        (
+            "E3SM AI Platform startup configuration",
+            "  API",
+            f"    CORS origins: {cors_origins}",
+            "  Inference",
+            f"    Backend: {settings.assistant_generator}",
+            f"    LivAI enabled: {settings.livai_enabled}",
+            f"    LivAI model: {settings.livai_model}",
+            f"    LivAI base URL: {settings.livai_base_url}",
+            "  Retrieval",
+            f"    Mode: {settings.retrieval_mode}",
+            f"    Embedding model: {settings.embedding_model}",
+            f"    Lexical minimum coverage: {settings.retrieval_lexical_min_coverage}",
+            f"    Lexical minimum score: {settings.retrieval_lexical_min_score}",
+            f"    Semantic minimum score: {settings.retrieval_semantic_min_score}",
+            f"    Lexical weight: {settings.retrieval_lexical_weight}",
+            f"    Semantic weight: {settings.retrieval_semantic_weight}",
+            "  Observability",
+            f"    Service name: {settings.service_name}",
+            f"    Deployment environment: {settings.deployment_environment}",
+            f"    OTLP endpoint: {otlp_endpoint}",
+            f"    OTLP headers: {otlp_headers}",
+        )
     )
 
 

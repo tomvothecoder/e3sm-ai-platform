@@ -1,10 +1,17 @@
+from pathlib import Path
+
 import pytest
 
 from e3sm_ai_platform.infrastructure.settings import (
     DEFAULT_EMBEDDING_MODEL,
+    ENV_FILE,
     Settings,
     load_settings,
 )
+
+
+def test_environment_file_is_loaded_from_the_backend_root() -> None:
+    assert ENV_FILE == Path(__file__).parents[1] / ".env"
 
 
 def test_retrieval_settings_default_to_offline_safe_lexical_mode(
