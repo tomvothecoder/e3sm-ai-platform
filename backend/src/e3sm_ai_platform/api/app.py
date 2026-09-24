@@ -19,6 +19,7 @@ from e3sm_ai_platform.infrastructure.observability import (
     configure_observability,
     instrument_fastapi,
     log_request_complete,
+    log_startup_configuration,
 )
 from e3sm_ai_platform.infrastructure.settings import load_settings
 
@@ -65,6 +66,7 @@ class RequestObservabilityMiddleware(BaseHTTPMiddleware):
 app = FastAPI(title="E3SM Compass", version="0.1.0")
 _settings = load_settings()
 configure_observability(_settings)
+log_startup_configuration(_settings)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_cors_origins(),

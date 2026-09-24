@@ -59,6 +59,7 @@ class JsonFormatter(logging.Formatter):
             "http_status_code",
             "duration_ms",
             "outcome",
+            "configuration",
         ):
             value = getattr(record, field, None)
             if value is not None:
@@ -110,6 +111,35 @@ def instrument_fastapi(app: FastAPI) -> None:
 def get_logger() -> logging.Logger:
     """Return the configured application logger."""
     return logging.getLogger(LOGGER_NAME)
+
+
+def log_startup_configuration(settings: Settings) -> None:
+    """Log the effective non-secret configuration once during application startup."""
+    get_logger().info(
+        "backend.startup.configuration", extra={"configuration": startup_configuration(settings)}
+    )
+
+
+def startup_configuration(settings: Settings) -> dict[str, object]:
+    """Return effective settings that are safe to include in startup logs."""
+    return {
+        "cors_allow_origins": list(settings.cors_allow_origins),
+        "inference_backend": settings.assistant_generator,
+        "livai_base_url": settings.livai_base_url,
+        "livai_enabled": settings.livai_enabled,
+        "livai_model": settings.livai_model,
+        "retrieval_mode": settings.retrieval_mode,
+        "embedding_model": settings.embedding_model,
+        "retrieval_lexical_min_coverage": settings.retrieval_lexical_min_coverage,
+        "retrieval_lexical_min_score": settings.retrieval_lexical_min_score,
+        "retrieval_semantic_min_score": settings.retrieval_semantic_min_score,
+        "retrieval_lexical_weight": settings.retrieval_lexical_weight,
+        "retrieval_semantic_weight": settings.retrieval_semantic_weight,
+        "service_name": settings.service_name,
+        "deployment_environment": settings.deployment_environment,
+        "otlp_endpoint": settings.otlp_endpoint,
+        "otlp_headers_configured": bool(settings.otlp_headers),
+    }
 
 
 def log_request_complete(fields: Mapping[str, object]) -> None:

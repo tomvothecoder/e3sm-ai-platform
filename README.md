@@ -2,7 +2,10 @@
 
 E3SM AI Platform is the provider-independent backend prototype for **E3SM Compass**, a chat application that answers E3SM questions using a curated documentation corpus.
 
-Answers include citations and source provenance. When the available evidence is insufficient, the application explicitly says so. This prototype is not a complete E3SM documentation service or a production operational assistant.
+Answers include citations and source provenance. When the available evidence is insufficient, the application explicitly says so.
+
+> [!NOTE]
+> This prototype is actively evolving as project needs and evaluation findings inform its scope and design. It is not yet a complete E3SM documentation service or a production operational assistant.
 
 ## Quickstart
 
@@ -14,7 +17,7 @@ Answers include citations and source provenance. When the available evidence is 
 
 ### Start the application
 
-From the repository root, install dependencies and start the API:
+From the repository root, install dependencies, configure the environment,and start the API:
 
 ```bash
 make sync
@@ -47,15 +50,29 @@ See [Developer setup](docs/dev/setup.md) for optional retrieval modes and LivAI 
 
 ## Features
 
-- **Curated E3SM knowledge:** A 31-entry corpus covering the E3SM User Guide, Running E3SM, EAM, EAMxx, ELM, Diagnostics, and E3SM-Unified.
-- **Configurable retrieval:** Deterministic lexical retrieval by default, with optional semantic and hybrid modes using LlamaIndex and Hugging Face embeddings.
-- **Evidence-based answers:** Relevance checks, citations, source provenance, and explicit insufficient-evidence responses.
-- **API and chat UI:** A FastAPI `POST /query` endpoint and React/TypeScript frontend with loading and error states, expandable evidence, and route/source debugging.
-- **Optional LLM generation:** Backend-only LivAI integration through PydanticAI. Deterministic generation remains the default and fallback.
-- **Evaluation:** Deterministic pytest fixtures validate routing, evidence, and citation behavior.
-- **Observability:** Structured JSON logs, request IDs, and OpenTelemetry tracing with privacy-preserving defaults. An optional Collector and Jaeger stack supports local trace inspection.
+### E3SM Compass frontend
 
-Provider-independent interfaces support retrieval, generation, and future web and operational connectors. Live web and operational integrations are not bundled.
+- **Chat interface:** React/TypeScript UI with loading and error states.
+- **Answer inspection:** Citations, expandable evidence, and route/source debugging.
+
+### Backend and inference
+
+- **Query API:** FastAPI `POST /query` endpoint with deterministic routing.
+- **Response generation:** Deterministic generation by default and as a fallback, with optional backend-only LivAI integration through PydanticAI.
+- **Insufficient-evidence handling:** Explicit responses when the available evidence cannot support an answer.
+- **Extensible interfaces:** Provider-independent retrieval and generation, with extension points for future web and operational connectors. Live connectors are not bundled.
+
+### Knowledge and retrieval
+
+- **Curated corpus:** 31 entries covering the E3SM User Guide, Running E3SM, EAM, EAMxx, ELM, Diagnostics, and E3SM-Unified.
+- **Retrieval modes:** Deterministic lexical retrieval by default, with optional semantic and hybrid modes using LlamaIndex and Hugging Face embeddings.
+- **Evidence checks:** Relevance filtering, source provenance, and citations.
+
+### Evaluation and observability
+
+- **Behavior validation:** Deterministic pytest fixtures check routing, evidence, and citations.
+- **Request monitoring:** Structured JSON logs, request IDs, and OpenTelemetry tracing with privacy-preserving defaults.
+- **Local trace inspection:** Optional OpenTelemetry Collector and Jaeger stack.
 
 ## How it works
 
