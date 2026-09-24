@@ -17,7 +17,7 @@ Answers include citations and source provenance. When the available evidence is 
 
 ### Start the application
 
-From the repository root, install dependencies, configure the environment,and start the API:
+From the repository root, install dependencies, configure the backend environment, and start the API:
 
 ```bash
 make sync
