@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help check clean backend-start backend-test backend-lint backend-typecheck evaluation-test evaluation-lint evaluation-typecheck frontend-install frontend-start frontend-test frontend-lint frontend-typecheck frontend-build observability-up observability-down observability-status observability-logs
+.PHONY: help sync check clean backend-sync backend-start backend-test backend-lint backend-typecheck evaluation-test evaluation-lint evaluation-typecheck frontend-sync frontend-start frontend-test frontend-lint frontend-typecheck frontend-build observability-up observability-down observability-status observability-logs
 
 # =============================================================================
 # Help
@@ -8,15 +8,17 @@
 
 help:
 	@printf '%s\n' 'E3SM AI Platform commands:' '' \
+	  '  sync                          Synchronize all Python and frontend dependencies' \
 	  '  check                         Run backend and evaluation checks' \
 	  '  clean                         Remove generated files and local caches' '' \
 	  'Backend:' \
+	  '  backend-sync                  Synchronize backend Python dependencies only' \
 	  '  backend-start                 Run the FastAPI service with reload' \
 	  '  backend-test                  Run backend tests' \
 	  '  backend-lint                  Run Ruff on the backend' \
 	  '  backend-typecheck             Run ty on the backend' '' \
 	  'Frontend:' \
-	  '  frontend-install              Install frontend dependencies' \
+	  '  frontend-sync                 Synchronize frontend dependencies only' \
 	  '  frontend-start                Run the Vite development server' \
 	  '  frontend-test                 Run frontend tests' \
 	  '  frontend-lint                 Run ESLint' \
@@ -36,11 +38,18 @@ help:
 # Quality checks
 # =============================================================================
 
+sync:
+	uv sync --all-packages --all-groups
+	$(MAKE) frontend-sync
+
 check: backend-test backend-lint backend-typecheck evaluation-test evaluation-lint evaluation-typecheck
 
 # =============================================================================
 # Backend
 # =============================================================================
+
+backend-sync:
+	uv sync --package e3sm-ai-platform-backend --all-groups
 
 backend-start:
 	uv run --all-packages --directory backend uvicorn e3sm_ai_platform.api.app:app --reload
@@ -58,7 +67,7 @@ backend-typecheck:
 # Frontend
 # =============================================================================
 
-frontend-install:
+frontend-sync:
 	npm --prefix frontend ci
 
 frontend-start:

@@ -17,8 +17,7 @@ Answers include citations and source provenance. When the available evidence is 
 From the repository root, install dependencies and start the API:
 
 ```bash
-uv sync --all-packages --all-groups
-make frontend-install
+make sync
 make backend-start
 ```
 
@@ -92,6 +91,9 @@ See [Architecture](docs/dev/architecture.md) for routing, ingestion, retrieval s
 
 | Task                                                                 | Command                                                              |
 | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Synchronize all Python and frontend dependencies                     | `make sync`                                                          |
+| Synchronize backend Python dependencies only                         | `make backend-sync`                                                  |
+| Synchronize frontend dependencies only                               | `make frontend-sync`                                                 |
 | Run backend and evaluation tests, lint, and type checks              | `make check`                                                         |
 | Run frontend tests, lint, type checks, and production build          | `make frontend-test frontend-lint frontend-typecheck frontend-build` |
 | Start the API                                                        | `make backend-start`                                                 |
