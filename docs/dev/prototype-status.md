@@ -1,4 +1,4 @@
-# E3SM-ASSIST prototype status
+# E3SM Compass prototype status
 
 This document is limited to current status and evidence. For setup, usage,
 architecture, evaluation, observability, and roadmap guidance, use the canonical
@@ -23,9 +23,9 @@ guides linked from [../README.md](../README.md).
 - Provider-independent interfaces for embedders, stores, rerankers, hybrid
   retrieval, web sources, and operational sources; constructor injection allows
   replacement without a framework.
-- Evaluation-compatible response fields (`route`, `retrieved_evidence`, citation provenance) and a packaged evaluator at `e3sm_assist.evaluation_adapter:evaluate`.
+- Evaluation-compatible response fields (`route`, `retrieved_evidence`, citation provenance) and a packaged evaluator at `e3sm_ai_platform.evaluation:evaluate`.
 - React/Vite chat UI with loading/error states, citations, expandable evidence, and a debug route/source view.
-- Local integration support through the Vite `/query` proxy and configurable FastAPI CORS (`E3SM_ASSIST_CORS_ALLOW_ORIGINS`).
+- Local integration support through the Vite `/query` proxy and configurable FastAPI CORS (`CORS_ALLOW_ORIGINS`).
 - Optional backend-only LivAI generation configuration for curated-evidence answers, with deterministic fallback if the provider is unavailable.
 
 ## Not delivered
@@ -41,13 +41,13 @@ guides linked from [../README.md](../README.md).
 
 ## Evidence and verification
 
-- Backend verification is covered by pytest, Ruff, and mypy targets in the
+- Backend verification is covered by pytest, Ruff, and ty targets in the
   Makefile; see [setup.md](setup.md) for canonical validation guidance.
 - Evaluation verification is covered by deterministic pytest checks run with
-  `E3SM_ASSIST_EVALUATOR=e3sm_assist.evaluation_adapter:evaluate`.
+  `E3SM_COMPASS_EVALUATOR=e3sm_ai_platform.evaluation:evaluate`.
 - Frontend verification is covered by Vitest, ESLint, TypeScript type checking,
   and production Vite build targets in the Makefile.
-- Backend startup target is `e3sm_assist.app:app`.
+- Backend startup target is `e3sm_ai_platform.api.app:app`.
 - One non-blocking upstream warning remains: Starlette's `TestClient` deprecation notice for its current `httpx` integration.
 
 ## Review outcomes

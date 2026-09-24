@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
 from pytest import LogCaptureFixture
 
-from e3sm_assist.app import app
-from e3sm_assist.observability import JsonFormatter
+from e3sm_ai_platform.api.app import app
+from e3sm_ai_platform.infrastructure.observability import JsonFormatter
 
 client = TestClient(app)
 

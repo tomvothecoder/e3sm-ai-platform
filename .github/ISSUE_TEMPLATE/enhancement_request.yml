@@ -1,0 +1,38 @@
+name: Enhancement Request
+description: Suggest an improvement to E3SM AI Platform or E3SM Compass.
+title: "[Enhancement]: "
+labels: ["type: enhancement"]
+assignees: []
+
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: Describe the problem this enhancement would address. Search existing issues first.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: Describe the outcome or behavior you would like.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe other approaches or workarounds.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add mockups, references, or implementation considerations.
+    validations:
+      required: false

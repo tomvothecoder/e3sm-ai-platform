@@ -1,6 +1,6 @@
-# E3SM-ASSIST usage guide
+# E3SM Compass usage guide
 
-E3SM-ASSIST is a local prototype assistant for questions supported by a curated
+E3SM Compass is a local prototype assistant for questions supported by a curated
 E3SM documentation corpus. It answers from accepted curated evidence when
 available, otherwise it returns an explicit insufficient-evidence response for
 current web, live operational/tool, or unsupported requests.
@@ -11,10 +11,10 @@ From the repository root:
 
 ```bash
 uv sync --all-packages --all-groups
-uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
+uv run --all-packages --directory backend uvicorn e3sm_ai_platform.api.app:app --reload
 ```
 
-The backend starts the FastAPI application `e3sm_assist.app:app`. Useful local
+The backend starts the FastAPI application `e3sm_ai_platform.api.app:app`. Useful local
 endpoints are:
 
 - `GET http://localhost:8000/health`
@@ -72,7 +72,7 @@ accepted evidence. Non-curated routes return no accepted evidence or citations.
 
 ## Answer process
 
-E3SM-ASSIST uses retrieval-augmented generation (RAG) to:
+E3SM Compass uses retrieval-augmented generation (RAG) to:
 
 1. Search the curated E3SM documentation corpus for relevant passages.
 2. Rank top candidates with the configured retrieval mode. The default
@@ -97,10 +97,10 @@ Deterministic generation is the default. To opt into LivAI for answers that
 already have curated supporting evidence, configure the backend process only:
 
 ```bash
-ASSISTANT_GENERATOR=livai
-ASSISTANT_LIVAI_API_KEY=your-secret-key
-ASSISTANT_LIVAI_MODEL=gpt-5.5
-ASSISTANT_LIVAI_BASE_URL=https://livai-api.llnl.gov/
+INFERENCE_BACKEND=livai
+LIVAI_API_KEY=your-secret-key
+LIVAI_MODEL=gpt-5.5
+LIVAI_BASE_URL=https://livai-api.llnl.gov/
 ```
 
 Inject secrets through an untracked backend environment, `backend/.env`, or a

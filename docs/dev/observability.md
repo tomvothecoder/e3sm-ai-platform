@@ -1,6 +1,6 @@
 # Observability guide
 
-This guide describes observability expectations for the current E3SM-ASSIST
+This guide describes observability expectations for the current E3SM Compass
 prototype and separates the implemented baseline from deployment and governance
 work that must be completed before production use. The implementation status in
 [`prototype-status.md`](prototype-status.md) remains the source of truth for
@@ -22,14 +22,17 @@ delivered features; this document focuses on durable operating guidance.
   FastAPI instrumentation, internal spans around query/retrieval/acceptance/
   routing/generation, JSON request-completion logs with an allow-listed field
   set, and a server-generated `X-Request-ID` response header.
+- Startup displays a human-readable summary of the effective non-secret
+  configuration, including inference, retrieval, CORS, service, and OTLP
+  settings. API keys and OTLP header values are never logged.
 - The frontend sends a W3C `traceparent` header for `/query` requests and can
   display the returned `X-Request-ID` in generic error messages.
 - OTLP trace export is disabled unless the backend is explicitly configured with
   an OTLP HTTP traces endpoint.
 
 Telemetry `service.name` identifies each emitting process: the backend API uses
-`e3sm-assist-api`, a future browser frontend uses `e3sm-assist-web`, and
-`e3sm-assist` remains the shared product label.
+`e3sm-ai-platform-backend`, and a future browser frontend uses
+`e3sm-compass-frontend`.
 
 Not currently implemented:
 
@@ -61,23 +64,23 @@ Configure the backend process to export traces to the local Collector. The OTLP
 endpoint must be exactly:
 
 ```bash
-E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces
+OTLP_ENDPOINT=http://localhost:4318/v1/traces
 ```
 
 Optional local resource labels:
 
 ```bash
-E3SM_ASSIST_SERVICE_NAME=e3sm-assist-api
-E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local
+SERVICE_NAME=e3sm-ai-platform-backend
+DEPLOYMENT_ENVIRONMENT=local
 ```
 
 Start the backend with those variables in the backend process environment:
 
 ```bash
-E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces \
-E3SM_ASSIST_SERVICE_NAME=e3sm-assist-api \
-E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local \
-uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
+OTLP_ENDPOINT=http://localhost:4318/v1/traces \
+SERVICE_NAME=e3sm-ai-platform-backend \
+DEPLOYMENT_ENVIRONMENT=local \
+uv run --all-packages --directory backend uvicorn e3sm_ai_platform.api.app:app --reload
 ```
 
 Submit a query from the frontend or directly:
@@ -114,13 +117,13 @@ Troubleshooting:
 - Docker daemon unavailable: start Docker Desktop, wait until the engine is
   running, then rerun `make observability-up`.
 - Port `4318` already in use: stop the other local OTLP HTTP Collector or change
-  the compose port mapping and update `E3SM_ASSIST_OTLP_ENDPOINT` consistently.
+  the compose port mapping and update `OTLP_ENDPOINT` consistently.
 - Port `16686` already in use: stop the other Jaeger instance or change the
   Jaeger UI port mapping before opening the UI.
 - Port `13133` already in use: stop the other local Collector health endpoint or
   change the compose health-check port mapping.
 - No traces in Jaeger: confirm the backend was started after setting
-  `E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces`, submit a new
+  `OTLP_ENDPOINT=http://localhost:4318/v1/traces`, submit a new
   query, then search for the configured service name.
 
 ## Trace topology
@@ -140,14 +143,14 @@ intended durable topology is:
 7. `generation.provider`: optional provider call, currently LivAI only when
    explicitly enabled for curated-evidence answers.
 
-Current backend span names are implementation-oriented (`assist.query`,
-`rag.retrieve`, `rag.accept`, `assist.route`, and `generation.generate`). Treat
+Current backend span names are implementation-oriented (`compass.query`,
+`rag.retrieve`, `rag.accept`, `compass.route`, and `generation.generate`). Treat
 the topology above as the long-term naming/coverage goal, especially for adding
 separate frontend and provider spans.
 
 Recommended low-cardinality span attributes:
 
-- `app.name`: `e3sm-assist`
+- `app.name`: `e3sm-ai-platform`
 - `http.route`: `/query`
 - `rag.route`: one of `curated`, `web`, `future_operational`, or
   `insufficient_evidence`
@@ -227,7 +230,7 @@ Recommended fields:
 | `timestamp` | RFC 3339 UTC timestamp. |
 | `level` | `INFO`, `WARN`, or `ERROR`. |
 | `event` | Stable event name. |
-| `service` | Emitting process name, such as `e3sm-assist-api` or future `e3sm-assist-web`. |
+| `service` | Emitting process name, such as `e3sm-ai-platform-backend` or future `e3sm-compass-frontend`. |
 | `environment` | Deployment environment label. |
 | `request_id` | Propagated request ID once implemented. |
 | `trace_id` | OpenTelemetry trace ID once implemented. |
@@ -259,7 +262,7 @@ Example shape, with placeholder IDs only:
   "timestamp": "2026-08-13T00:00:00Z",
   "level": "INFO",
   "event": "query.completed",
-  "service": "e3sm-assist-api",
+  "service": "e3sm-ai-platform-backend",
   "environment": "local",
   "request_id": "not-implemented",
   "trace_id": "not-implemented",
@@ -292,15 +295,15 @@ For local development, point the backend at the local Docker Collector with
 backend-only environment variables:
 
 ```bash
-E3SM_ASSIST_OTLP_ENDPOINT=http://localhost:4318/v1/traces
-E3SM_ASSIST_SERVICE_NAME=e3sm-assist-api
-E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT=local
-E3SM_ASSIST_OTLP_HEADERS=
+OTLP_ENDPOINT=http://localhost:4318/v1/traces
+SERVICE_NAME=e3sm-ai-platform-backend
+DEPLOYMENT_ENVIRONMENT=local
+OTLP_HEADERS=
 ```
 
-`E3SM_ASSIST_OTLP_ENDPOINT` must remain unset to disable export. Outside local
+`OTLP_ENDPOINT` must remain unset to disable export. Outside local
 development, set it only for an approved Collector or telemetry gateway.
-Optional `E3SM_ASSIST_OTLP_HEADERS` uses comma-separated `key=value` entries for
+Optional `OTLP_HEADERS` uses comma-separated `key=value` entries for
 exporter headers and must not be logged or exposed to the frontend.
 
 Before enabling OTLP export, add an explicit deployment design that covers:
@@ -316,8 +319,8 @@ Future deployments may prefer standard OpenTelemetry environment variables where
 possible, for example:
 
 ```bash
-OTEL_SERVICE_NAME=e3sm-assist-api
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=local,app.name=e3sm-assist
+OTEL_SERVICE_NAME=e3sm-ai-platform-backend
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=local,app.name=e3sm-ai-platform
 OTEL_EXPORTER_OTLP_ENDPOINT=https://collector.example.invalid:4318
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_TRACES_SAMPLER=parentbased_traceidratio
@@ -325,13 +328,13 @@ OTEL_TRACES_SAMPLER_ARG=0.10
 ```
 
 These `OTEL_*` variables are future deployment examples, not current repository
-requirements. Keep provider secrets such as `ASSISTANT_LIVAI_API_KEY` out of all
+requirements. Keep provider secrets such as `LIVAI_API_KEY` out of all
 telemetry configuration and exported resource attributes.
 
 ## Sampling and retention
 
 Current local development has no repository-owned telemetry retention policy.
-Traces are not exported unless `E3SM_ASSIST_OTLP_ENDPOINT` is set. The local
+Traces are not exported unless `OTLP_ENDPOINT` is set. The local
 Jaeger stack is for short-lived debugging, not durable retention.
 
 Recommended future defaults:

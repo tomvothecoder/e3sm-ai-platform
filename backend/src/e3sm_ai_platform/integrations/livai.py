@@ -10,14 +10,14 @@ from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
-from e3sm_assist.generation import generate_response
-from e3sm_assist.models import Evidence, GenerationMode, QueryResponse, RouteName
-from e3sm_assist.settings import Settings
+from e3sm_ai_platform.application.generation import generate_response
+from e3sm_ai_platform.domain.models import Evidence, GenerationMode, QueryResponse, RouteName
+from e3sm_ai_platform.infrastructure.settings import Settings
 
 # Deterministic context bound so prompts cannot grow without limit as corpus/retrieval expands.
 MAX_EVIDENCE_PROMPT_CHARS = 8_000
 SYSTEM_PROMPT = (
-    "You are E3SM-ASSIST. Answer only from the provided E3SM evidence. "
+    "You are E3SM Compass. Answer only from the provided E3SM evidence. "
     "Do not add claims beyond the sources. If the evidence is insufficient, say so. "
     "Do not invent citations; the server attaches citations separately."
 )

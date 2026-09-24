@@ -1,8 +1,8 @@
 from pydantic import HttpUrl, TypeAdapter
 
-from e3sm_assist.generation import generate_response
-from e3sm_assist.models import Evidence, RouteName, SourceMetadata
-from e3sm_assist.router import DeterministicRouter
+from e3sm_ai_platform.application.generation import generate_response
+from e3sm_ai_platform.application.routing import DeterministicRouter
+from e3sm_ai_platform.domain.models import Evidence, RouteName, SourceMetadata
 
 _HTTP_URL_ADAPTER: TypeAdapter[HttpUrl] = TypeAdapter(HttpUrl)
 

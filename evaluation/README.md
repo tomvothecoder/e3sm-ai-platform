@@ -1,4 +1,4 @@
-# E3SM-ASSIST evaluation adapter contract
+# E3SM Compass evaluation adapter contract
 
 This directory contains the independent deterministic integration evaluation.
 The canonical evaluation guide is [../docs/dev/evaluation.md](../docs/dev/evaluation.md).
@@ -6,7 +6,7 @@ The canonical evaluation guide is [../docs/dev/evaluation.md](../docs/dev/evalua
 Configure a synchronous Python adapter before running pytest:
 
 ```sh
-E3SM_ASSIST_EVALUATOR=e3sm_assist.evaluation_adapter:evaluate \
+E3SM_COMPASS_EVALUATOR=e3sm_ai_platform.evaluation:evaluate \
   uv run --all-packages pytest evaluation
 ```
 
@@ -35,4 +35,4 @@ Pytest imports the adapter once per session and invokes it once for every fixtur
 
 Curated corpus records must use the `source_id` values named in `fixtures/e3sm_questions.json` (or the adapter must translate backend identifiers to them). For curated cases, expected source IDs must appear in `retrieved_evidence`; citations must contain both `source_id` and `provenance`. Unsupported cases must return the `insufficient_evidence` route, set `insufficient_evidence` to `true`, return no retrieved evidence, and say that evidence is insufficient in the answer.
 
-Without `E3SM_ASSIST_EVALUATOR`, tests are skipped intentionally rather than guessing backend package paths.
+Without `E3SM_COMPASS_EVALUATOR`, tests are skipped intentionally rather than guessing backend package paths.
