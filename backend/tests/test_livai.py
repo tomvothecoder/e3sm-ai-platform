@@ -60,11 +60,11 @@ class FakeChatClient:
 @pytest.fixture
 def clear_livai_env(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     for key in [
-        "E3SM_PLATFORM_GENERATOR",
-        "E3SM_PLATFORM_LIVAI_API_KEY",
-        "E3SM_PLATFORM_LIVAI_MODEL",
-        "E3SM_PLATFORM_LIVAI_BASE_URL",
-        "E3SM_PLATFORM_CORS_ALLOW_ORIGINS",
+        "INFERENCE_BACKEND",
+        "LIVAI_API_KEY",
+        "LIVAI_MODEL",
+        "LIVAI_BASE_URL",
+        "CORS_ALLOW_ORIGINS",
     ]:
         monkeypatch.delenv(key, raising=False)
     yield
@@ -109,10 +109,10 @@ def test_livai_enablement_requires_flag_and_key(
     clear_livai_env: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("E3SM_PLATFORM_GENERATOR", "livai")
+    monkeypatch.setenv("INFERENCE_BACKEND", "livai")
     assert build_generator(load_settings(load_dotenv_file=False)) is None
 
-    monkeypatch.setenv("E3SM_PLATFORM_LIVAI_API_KEY", "test-key")
+    monkeypatch.setenv("LIVAI_API_KEY", "test-key")
     generator = build_generator(load_settings(load_dotenv_file=False))
 
     assert generator is not None

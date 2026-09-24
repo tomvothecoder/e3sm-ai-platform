@@ -61,22 +61,22 @@ Configure the backend process to export traces to the local Collector. The OTLP
 endpoint must be exactly:
 
 ```bash
-E3SM_PLATFORM_OTLP_ENDPOINT=http://localhost:4318/v1/traces
+OTLP_ENDPOINT=http://localhost:4318/v1/traces
 ```
 
 Optional local resource labels:
 
 ```bash
-E3SM_PLATFORM_SERVICE_NAME=e3sm-ai-platform-backend
-E3SM_PLATFORM_DEPLOYMENT_ENVIRONMENT=local
+SERVICE_NAME=e3sm-ai-platform-backend
+DEPLOYMENT_ENVIRONMENT=local
 ```
 
 Start the backend with those variables in the backend process environment:
 
 ```bash
-E3SM_PLATFORM_OTLP_ENDPOINT=http://localhost:4318/v1/traces \
-E3SM_PLATFORM_SERVICE_NAME=e3sm-ai-platform-backend \
-E3SM_PLATFORM_DEPLOYMENT_ENVIRONMENT=local \
+OTLP_ENDPOINT=http://localhost:4318/v1/traces \
+SERVICE_NAME=e3sm-ai-platform-backend \
+DEPLOYMENT_ENVIRONMENT=local \
 uv run --all-packages --directory backend uvicorn e3sm_ai_platform.api.app:app --reload
 ```
 
@@ -114,13 +114,13 @@ Troubleshooting:
 - Docker daemon unavailable: start Docker Desktop, wait until the engine is
   running, then rerun `make observability-up`.
 - Port `4318` already in use: stop the other local OTLP HTTP Collector or change
-  the compose port mapping and update `E3SM_PLATFORM_OTLP_ENDPOINT` consistently.
+  the compose port mapping and update `OTLP_ENDPOINT` consistently.
 - Port `16686` already in use: stop the other Jaeger instance or change the
   Jaeger UI port mapping before opening the UI.
 - Port `13133` already in use: stop the other local Collector health endpoint or
   change the compose health-check port mapping.
 - No traces in Jaeger: confirm the backend was started after setting
-  `E3SM_PLATFORM_OTLP_ENDPOINT=http://localhost:4318/v1/traces`, submit a new
+  `OTLP_ENDPOINT=http://localhost:4318/v1/traces`, submit a new
   query, then search for the configured service name.
 
 ## Trace topology
@@ -292,15 +292,15 @@ For local development, point the backend at the local Docker Collector with
 backend-only environment variables:
 
 ```bash
-E3SM_PLATFORM_OTLP_ENDPOINT=http://localhost:4318/v1/traces
-E3SM_PLATFORM_SERVICE_NAME=e3sm-ai-platform-backend
-E3SM_PLATFORM_DEPLOYMENT_ENVIRONMENT=local
-E3SM_PLATFORM_OTLP_HEADERS=
+OTLP_ENDPOINT=http://localhost:4318/v1/traces
+SERVICE_NAME=e3sm-ai-platform-backend
+DEPLOYMENT_ENVIRONMENT=local
+OTLP_HEADERS=
 ```
 
-`E3SM_PLATFORM_OTLP_ENDPOINT` must remain unset to disable export. Outside local
+`OTLP_ENDPOINT` must remain unset to disable export. Outside local
 development, set it only for an approved Collector or telemetry gateway.
-Optional `E3SM_PLATFORM_OTLP_HEADERS` uses comma-separated `key=value` entries for
+Optional `OTLP_HEADERS` uses comma-separated `key=value` entries for
 exporter headers and must not be logged or exposed to the frontend.
 
 Before enabling OTLP export, add an explicit deployment design that covers:
@@ -325,13 +325,13 @@ OTEL_TRACES_SAMPLER_ARG=0.10
 ```
 
 These `OTEL_*` variables are future deployment examples, not current repository
-requirements. Keep provider secrets such as `E3SM_PLATFORM_LIVAI_API_KEY` out of all
+requirements. Keep provider secrets such as `LIVAI_API_KEY` out of all
 telemetry configuration and exported resource attributes.
 
 ## Sampling and retention
 
 Current local development has no repository-owned telemetry retention policy.
-Traces are not exported unless `E3SM_PLATFORM_OTLP_ENDPOINT` is set. The local
+Traces are not exported unless `OTLP_ENDPOINT` is set. The local
 Jaeger stack is for short-lived debugging, not durable retention.
 
 Recommended future defaults:

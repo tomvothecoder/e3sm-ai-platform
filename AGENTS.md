@@ -23,9 +23,9 @@ snapshot of the project structure or dependency versions.
 - **E3SM AI Platform** is the repository and backend platform.
 - **E3SM Compass** is the assistant-facing product, including UI text, API
   titles, prompt identity, and evaluation contract.
-- Use `e3sm_ai_platform` for Python package identifiers and
-  `E3SM_PLATFORM_*` for backend operational configuration. Use
-  `E3SM_COMPASS_EVALUATOR` for the external evaluation adapter contract.
+- Use `e3sm_ai_platform` for Python package identifiers and unprefixed backend
+  configuration variables. Use `E3SM_COMPASS_EVALUATOR` for the external
+  evaluation adapter contract.
 
 ## Architecture
 

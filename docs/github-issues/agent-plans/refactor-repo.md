@@ -89,7 +89,8 @@ isolation, and packaged-corpus resource tests.
 - Update scripts and startup configuration to
   `e3sm_ai_platform.api.app:app`.
 - Replace backend operational configuration from `E3SM_ASSIST_*` and generic
-  `ASSISTANT_*` names with `E3SM_PLATFORM_*`, with no compatibility variables.
+  `ASSISTANT_*` names with clear, unprefixed variables, with no compatibility
+  variables.
 - Rename backend observability and deployment identifiers, including the
   default OpenTelemetry service name, logger name, trace attributes, and the
   observability Compose project name, to E3SM AI Platform terminology.

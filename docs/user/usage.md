@@ -97,10 +97,10 @@ Deterministic generation is the default. To opt into LivAI for answers that
 already have curated supporting evidence, configure the backend process only:
 
 ```bash
-E3SM_PLATFORM_GENERATOR=livai
-E3SM_PLATFORM_LIVAI_API_KEY=your-secret-key
-E3SM_PLATFORM_LIVAI_MODEL=gpt-5.5
-E3SM_PLATFORM_LIVAI_BASE_URL=https://livai-api.llnl.gov/
+INFERENCE_BACKEND=livai
+LIVAI_API_KEY=your-secret-key
+LIVAI_MODEL=gpt-5.5
+LIVAI_BASE_URL=https://livai-api.llnl.gov/
 ```
 
 Inject secrets through an untracked backend environment, `backend/.env`, or a

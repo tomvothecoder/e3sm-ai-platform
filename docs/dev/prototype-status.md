@@ -25,7 +25,7 @@ guides linked from [../README.md](../README.md).
   replacement without a framework.
 - Evaluation-compatible response fields (`route`, `retrieved_evidence`, citation provenance) and a packaged evaluator at `e3sm_ai_platform.evaluation:evaluate`.
 - React/Vite chat UI with loading/error states, citations, expandable evidence, and a debug route/source view.
-- Local integration support through the Vite `/query` proxy and configurable FastAPI CORS (`E3SM_PLATFORM_CORS_ALLOW_ORIGINS`).
+- Local integration support through the Vite `/query` proxy and configurable FastAPI CORS (`CORS_ALLOW_ORIGINS`).
 - Optional backend-only LivAI generation configuration for curated-evidence answers, with deterministic fallback if the provider is unavailable.
 
 ## Not delivered

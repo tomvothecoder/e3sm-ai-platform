@@ -71,30 +71,26 @@ The package scripts are `test`, `lint`, `typecheck`, and `build`.
 Backend settings are read from environment variables and optional `backend/.env`.
 Common local settings are:
 
-- `E3SM_PLATFORM_CORS_ALLOW_ORIGINS`: comma-separated browser origins allowed by
+- `CORS_ALLOW_ORIGINS`: comma-separated browser origins allowed by
   FastAPI CORS; defaults to `http://localhost:5173`.
-- `E3SM_PLATFORM_GENERATOR`: `deterministic` by default; set to `livai` only with a
+- `INFERENCE_BACKEND`: `deterministic` by default; set to `livai` only with a
   configured backend API key.
-- `E3SM_PLATFORM_LIVAI_API_KEY`, `E3SM_PLATFORM_LIVAI_MODEL`,
-  `E3SM_PLATFORM_LIVAI_BASE_URL`: backend-only LivAI settings.
-- `E3SM_PLATFORM_OTLP_ENDPOINT`, `E3SM_PLATFORM_SERVICE_NAME`,
-  `E3SM_PLATFORM_DEPLOYMENT_ENVIRONMENT`, `E3SM_PLATFORM_OTLP_HEADERS`: optional
+- `LIVAI_API_KEY`, `LIVAI_MODEL`, `LIVAI_BASE_URL`: backend-only LivAI settings.
+- `OTLP_ENDPOINT`, `SERVICE_NAME`, `DEPLOYMENT_ENVIRONMENT`, `OTLP_HEADERS`: optional
   backend observability settings.
-- `E3SM_PLATFORM_RETRIEVAL_MODE`: `lexical` (default), `semantic`, or `hybrid`.
+- `RETRIEVAL_MODE`: `lexical` (default), `semantic`, or `hybrid`.
   Lexical mode is offline-safe and never loads an embedding model.
-- `E3SM_PLATFORM_EMBEDDING_MODEL`: Hugging Face model used for semantic and hybrid
+- `EMBEDDING_MODEL`: Hugging Face model used for semantic and hybrid
   retrieval; defaults to `BAAI/bge-small-en-v1.5`. Starting either mode may
   download the model and its dependencies on first use, so provision network
   access, cache storage, and suitable CPU or accelerator memory for the chosen
   model.
-- `E3SM_PLATFORM_RETRIEVAL_SEMANTIC_MIN_SCORE`: dense cosine-similarity gate for
+- `RETRIEVAL_SEMANTIC_MIN_SCORE`: dense cosine-similarity gate for
   semantic evidence; defaults to `0.7`. It is a model-calibration threshold,
   not a confidence percentage.
-- `E3SM_PLATFORM_RETRIEVAL_LEXICAL_MIN_COVERAGE` and
-  `E3SM_PLATFORM_RETRIEVAL_LEXICAL_MIN_SCORE`: lexical acceptance gates, defaulting
+- `RETRIEVAL_LEXICAL_MIN_COVERAGE` and `RETRIEVAL_LEXICAL_MIN_SCORE`: lexical acceptance gates, defaulting
   to `0.18` and `0.11` respectively.
-- `E3SM_PLATFORM_RETRIEVAL_LEXICAL_WEIGHT` and
-  `E3SM_PLATFORM_RETRIEVAL_SEMANTIC_WEIGHT`: non-negative hybrid weights, each
+- `RETRIEVAL_LEXICAL_WEIGHT` and `RETRIEVAL_SEMANTIC_WEIGHT`: non-negative hybrid weights, each
   defaulting to `0.5`. Hybrid ranking uses their normalized weighted average of
   lexical relevance (clamped lexical score) and non-negative semantic cosine
   similarity. Set at least one weight above zero.
@@ -102,9 +98,9 @@ Common local settings are:
 For example, enable semantic retrieval locally with:
 
 ```bash
-E3SM_PLATFORM_RETRIEVAL_MODE=semantic \
-E3SM_PLATFORM_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \
-E3SM_PLATFORM_RETRIEVAL_SEMANTIC_MIN_SCORE=0.7 \
+RETRIEVAL_MODE=semantic \
+EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \
+RETRIEVAL_SEMANTIC_MIN_SCORE=0.7 \
 uv run --all-packages --directory backend uvicorn e3sm_ai_platform.api.app:app --reload
 ```
 
