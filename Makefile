@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help sync check clean backend-sync backend-start backend-test backend-lint backend-typecheck evaluation-test evaluation-lint evaluation-typecheck frontend-sync frontend-start frontend-test frontend-lint frontend-typecheck frontend-build observability-up observability-down observability-status observability-logs
+.PHONY: help sync check clean backend-env backend-sync backend-start backend-test backend-lint backend-typecheck evaluation-test evaluation-lint evaluation-typecheck frontend-sync frontend-start frontend-test frontend-lint frontend-typecheck frontend-build observability-up observability-down observability-status observability-logs
 
 # =============================================================================
 # Help
@@ -12,6 +12,7 @@ help:
 	  '  check                         Run backend and evaluation checks' \
 	  '  clean                         Remove generated files and local caches' '' \
 	  'Backend:' \
+	  '  backend-env                   Create backend/.env from the example when absent' \
 	  '  backend-sync                  Synchronize backend Python dependencies only' \
 	  '  backend-start                 Run the FastAPI service with reload' \
 	  '  backend-test                  Run backend tests' \
@@ -47,6 +48,14 @@ check: backend-test backend-lint backend-typecheck evaluation-test evaluation-li
 # =============================================================================
 # Backend
 # =============================================================================
+
+backend-env:
+	@if [ -e backend/.env ]; then \
+	  printf '%s\n' 'backend/.env already exists; leaving it unchanged.'; \
+	else \
+	  cp backend/.env.example backend/.env; \
+	  printf '%s\n' 'Created backend/.env from backend/.env.example.'; \
+	fi
 
 backend-sync:
 	uv sync --package e3sm-ai-platform-backend --all-groups

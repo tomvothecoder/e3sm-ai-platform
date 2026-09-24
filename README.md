@@ -18,6 +18,7 @@ From the repository root, install dependencies and start the API:
 
 ```bash
 make sync
+make backend-env
 make backend-start
 ```
 
@@ -38,6 +39,9 @@ curl -X POST http://localhost:8000/query \
 ```
 
 After dependencies are installed, the default configuration runs and tests locally without proprietary services or external network requests. It uses the packaged corpus, lexical retrieval, and deterministic response generation.
+
+`make backend-env` creates `backend/.env` from `backend/.env.example` when it
+does not already exist. It never overwrites an existing local configuration.
 
 See [Developer setup](docs/dev/setup.md) for optional retrieval modes and LivAI configuration.
 
@@ -92,6 +96,7 @@ See [Architecture](docs/dev/architecture.md) for routing, ingestion, retrieval s
 | Task                                                                 | Command                                                              |
 | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | Synchronize all Python and frontend dependencies                     | `make sync`                                                          |
+| Create `backend/.env` from the example when absent                   | `make backend-env`                                                   |
 | Synchronize backend Python dependencies only                         | `make backend-sync`                                                  |
 | Synchronize frontend dependencies only                               | `make frontend-sync`                                                 |
 | Run backend and evaluation tests, lint, and type checks              | `make check`                                                         |
