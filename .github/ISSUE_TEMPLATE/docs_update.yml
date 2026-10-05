@@ -1,0 +1,39 @@
+name: Documentation Update
+description: Report missing, incorrect, stale, or unclear documentation.
+title: "[Docs]: "
+labels: ["type: doc"]
+assignees: []
+
+body:
+  - type: input
+    id: location
+    attributes:
+      label: Documentation location
+      description: Provide a repository path, page title, or URL.
+      placeholder: docs/dev/setup.md
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or missing?
+      description: Describe the gap or inaccurate guidance.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested update
+      description: Provide proposed wording or direction, if available.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add related links, screenshots, or examples.
+    validations:
+      required: false

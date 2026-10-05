@@ -1,4 +1,4 @@
-name: e3sm-assist-observability
+name: e3sm-ai-platform-observability
 
 services:
   jaeger:

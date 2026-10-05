@@ -3,7 +3,7 @@
 > the documentation index at [../README.md](../README.md) for current setup,
 > usage, architecture, evaluation, status, observability, and roadmap guidance.
 
-Build a minimal but extensible **E3SM AI Platform** prototype focused initially on **E3SM-ASSIST**.
+Build a minimal but extensible **E3SM AI Platform** prototype focused initially on **E3SM Compass**.
 
 ## Repository
 
@@ -19,7 +19,7 @@ Create a new repo named `e3sm-ai-platform` with:
 
 ## Prototype
 
-Build an end-to-end E3SM-ASSIST chat prototype using:
+Build an end-to-end E3SM Compass chat prototype using:
 
 - curated RAG for stable authoritative E3SM documentation
 - web search fallback for current information or corpus gaps

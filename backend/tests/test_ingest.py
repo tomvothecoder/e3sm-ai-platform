@@ -1,7 +1,14 @@
+from importlib.resources import files
+
 from pydantic import HttpUrl, TypeAdapter
 
-from e3sm_assist.ingest import chunk_corpus, chunk_entry, load_corpus
-from e3sm_assist.models import CorpusEntry
+from e3sm_ai_platform.domain.models import CorpusEntry
+from e3sm_ai_platform.knowledge.corpus import (
+    DEFAULT_CORPUS_RESOURCE,
+    chunk_corpus,
+    chunk_entry,
+    load_corpus,
+)
 
 _HTTP_URL_ADAPTER: TypeAdapter[HttpUrl] = TypeAdapter(HttpUrl)
 
@@ -15,6 +22,13 @@ def test_load_curated_corpus_has_representative_official_entries() -> None:
     assert "E3SM-Unified" in {entry.component for entry in entries}
     assert all(entry.authority == "official" for entry in entries)
     assert all(str(entry.url).startswith("https://docs.e3sm.org/") for entry in entries)
+
+
+def test_curated_corpus_is_loaded_from_package_resources() -> None:
+    assert DEFAULT_CORPUS_RESOURCE == files("e3sm_ai_platform.knowledge").joinpath(
+        "data/curated_corpus.json"
+    )
+    assert DEFAULT_CORPUS_RESOURCE.is_file()
 
 
 def test_curated_corpus_excludes_retired_documentation_routes() -> None:

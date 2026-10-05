@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from e3sm_assist.curation import (
+from e3sm_ai_platform.knowledge.curation import (
     CurationValidationError,
     capture,
     refresh,

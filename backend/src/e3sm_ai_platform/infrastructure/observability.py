@@ -15,9 +15,9 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
-from e3sm_assist.settings import Settings
+from e3sm_ai_platform.infrastructure.settings import Settings
 
-LOGGER_NAME = "e3sm_assist"
+LOGGER_NAME = "e3sm_ai_platform"
 _configured = False
 _instrumented_apps: set[int] = set()
 
@@ -27,7 +27,7 @@ class JsonFormatter(logging.Formatter):
 
     def __init__(
         self,
-        service_name: str = "e3sm-assist",
+        service_name: str = "e3sm-ai-platform-backend",
         deployment_environment: str = "development",
     ) -> None:
         """Initialize the formatter with the process service identity."""
@@ -37,6 +37,9 @@ class JsonFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """Format a log record without serializing arbitrary record attributes."""
+        if getattr(record, "human_readable", False):
+            return record.getMessage()
+
         context = trace.get_current_span().get_span_context()
         payload: dict[str, object] = {
             "event": record.getMessage(),
@@ -110,6 +113,66 @@ def instrument_fastapi(app: FastAPI) -> None:
 def get_logger() -> logging.Logger:
     """Return the configured application logger."""
     return logging.getLogger(LOGGER_NAME)
+
+
+def log_startup_configuration(settings: Settings) -> None:
+    """Display the effective non-secret configuration once during application startup."""
+    get_logger().info(format_startup_configuration(settings), extra={"human_readable": True})
+
+
+def format_startup_configuration(settings: Settings) -> str:
+    """Format effective non-secret settings as a human-readable startup summary."""
+    cors_origins = ", ".join(settings.cors_allow_origins)
+    otlp_endpoint = settings.otlp_endpoint or "disabled"
+    otlp_headers = "configured" if settings.otlp_headers else "not configured"
+
+    return "\n".join(
+        (
+            "E3SM AI Platform startup configuration",
+            "  API",
+            f"    CORS origins: {cors_origins}",
+            "  Inference",
+            f"    Backend: {settings.assistant_generator}",
+            f"    LivAI enabled: {settings.livai_enabled}",
+            f"    LivAI model: {settings.livai_model}",
+            f"    LivAI base URL: {settings.livai_base_url}",
+            "  Retrieval",
+            f"    Mode: {settings.retrieval_mode}",
+            f"    Embedding model: {settings.embedding_model}",
+            f"    Lexical minimum coverage: {settings.retrieval_lexical_min_coverage}",
+            f"    Lexical minimum score: {settings.retrieval_lexical_min_score}",
+            f"    Semantic minimum score: {settings.retrieval_semantic_min_score}",
+            f"    Lexical weight: {settings.retrieval_lexical_weight}",
+            f"    Semantic weight: {settings.retrieval_semantic_weight}",
+            "  Observability",
+            f"    Service name: {settings.service_name}",
+            f"    Deployment environment: {settings.deployment_environment}",
+            f"    OTLP endpoint: {otlp_endpoint}",
+            f"    OTLP headers: {otlp_headers}",
+        )
+    )
+
+
+def startup_configuration(settings: Settings) -> dict[str, object]:
+    """Return effective settings that are safe to include in startup logs."""
+    return {
+        "cors_allow_origins": list(settings.cors_allow_origins),
+        "inference_backend": settings.assistant_generator,
+        "livai_base_url": settings.livai_base_url,
+        "livai_enabled": settings.livai_enabled,
+        "livai_model": settings.livai_model,
+        "retrieval_mode": settings.retrieval_mode,
+        "embedding_model": settings.embedding_model,
+        "retrieval_lexical_min_coverage": settings.retrieval_lexical_min_coverage,
+        "retrieval_lexical_min_score": settings.retrieval_lexical_min_score,
+        "retrieval_semantic_min_score": settings.retrieval_semantic_min_score,
+        "retrieval_lexical_weight": settings.retrieval_lexical_weight,
+        "retrieval_semantic_weight": settings.retrieval_semantic_weight,
+        "service_name": settings.service_name,
+        "deployment_environment": settings.deployment_environment,
+        "otlp_endpoint": settings.otlp_endpoint,
+        "otlp_headers_configured": bool(settings.otlp_headers),
+    }
 
 
 def log_request_complete(fields: Mapping[str, object]) -> None:

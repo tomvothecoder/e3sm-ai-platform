@@ -21,7 +21,7 @@ describe('App', () => {
       evidence: [{ content: 'Retrieved context.', sourceLabel: 'E3SM documentation', sourceUrl: 'https://example.org/docs', score: 0.82, coverage: 0.5 }],
     })
     render(<App />)
-    const input = screen.getByLabelText('Ask E3SM-ASSIST a question')
+    const input = screen.getByLabelText('Ask E3SM Compass a question')
     fireEvent.change(input, { target: { value: 'Question' } })
     fireEvent.click(screen.getByRole('button', { name: 'Send question' }))
     expect(await screen.findByText('A grounded answer.')).toBeTruthy()
@@ -44,7 +44,7 @@ describe('App', () => {
       evidence: [],
     })
     render(<App />)
-    const input = screen.getByLabelText('Ask E3SM-ASSIST a question')
+    const input = screen.getByLabelText('Ask E3SM Compass a question')
     fireEvent.change(input, { target: { value: 'Question' } })
     fireEvent.keyDown(input, { key: 'Enter' })
 
@@ -63,7 +63,7 @@ describe('App', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Where are grid aliases and resolutions documented?' }))
 
-    const input = screen.getByLabelText('Ask E3SM-ASSIST a question') as HTMLTextAreaElement
+    const input = screen.getByLabelText('Ask E3SM Compass a question') as HTMLTextAreaElement
     expect(input.value).toBe('Where are grid aliases and resolutions documented?')
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(queryAssistant).toHaveBeenCalledWith('Where are grid aliases and resolutions documented?')

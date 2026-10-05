@@ -22,7 +22,7 @@ uv sync --all-packages --all-groups
 Run the backend:
 
 ```bash
-uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
+uv run --all-packages --directory backend uvicorn e3sm_ai_platform.api.app:app --reload
 ```
 
 Run backend tests:
@@ -41,7 +41,7 @@ make evaluation-test
 The Makefile expands that target to:
 
 ```bash
-E3SM_ASSIST_EVALUATOR=e3sm_assist.evaluation_adapter:evaluate uv run --all-packages pytest evaluation
+E3SM_COMPASS_EVALUATOR=e3sm_ai_platform.evaluation:evaluate uv run --all-packages pytest evaluation
 ```
 
 ## Frontend package
@@ -71,30 +71,26 @@ The package scripts are `test`, `lint`, `typecheck`, and `build`.
 Backend settings are read from environment variables and optional `backend/.env`.
 Common local settings are:
 
-- `E3SM_ASSIST_CORS_ALLOW_ORIGINS`: comma-separated browser origins allowed by
+- `CORS_ALLOW_ORIGINS`: comma-separated browser origins allowed by
   FastAPI CORS; defaults to `http://localhost:5173`.
-- `ASSISTANT_GENERATOR`: `deterministic` by default; set to `livai` only with a
+- `INFERENCE_BACKEND`: `deterministic` by default; set to `livai` only with a
   configured backend API key.
-- `ASSISTANT_LIVAI_API_KEY`, `ASSISTANT_LIVAI_MODEL`,
-  `ASSISTANT_LIVAI_BASE_URL`: backend-only LivAI settings.
-- `E3SM_ASSIST_OTLP_ENDPOINT`, `E3SM_ASSIST_SERVICE_NAME`,
-  `E3SM_ASSIST_DEPLOYMENT_ENVIRONMENT`, `E3SM_ASSIST_OTLP_HEADERS`: optional
+- `LIVAI_API_KEY`, `LIVAI_MODEL`, `LIVAI_BASE_URL`: backend-only LivAI settings.
+- `OTLP_ENDPOINT`, `SERVICE_NAME`, `DEPLOYMENT_ENVIRONMENT`, `OTLP_HEADERS`: optional
   backend observability settings.
-- `E3SM_ASSIST_RETRIEVAL_MODE`: `lexical` (default), `semantic`, or `hybrid`.
+- `RETRIEVAL_MODE`: `lexical` (default), `semantic`, or `hybrid`.
   Lexical mode is offline-safe and never loads an embedding model.
-- `E3SM_ASSIST_EMBEDDING_MODEL`: Hugging Face model used for semantic and hybrid
+- `EMBEDDING_MODEL`: Hugging Face model used for semantic and hybrid
   retrieval; defaults to `BAAI/bge-small-en-v1.5`. Starting either mode may
   download the model and its dependencies on first use, so provision network
   access, cache storage, and suitable CPU or accelerator memory for the chosen
   model.
-- `E3SM_ASSIST_RETRIEVAL_SEMANTIC_MIN_SCORE`: dense cosine-similarity gate for
+- `RETRIEVAL_SEMANTIC_MIN_SCORE`: dense cosine-similarity gate for
   semantic evidence; defaults to `0.7`. It is a model-calibration threshold,
   not a confidence percentage.
-- `E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_COVERAGE` and
-  `E3SM_ASSIST_RETRIEVAL_LEXICAL_MIN_SCORE`: lexical acceptance gates, defaulting
+- `RETRIEVAL_LEXICAL_MIN_COVERAGE` and `RETRIEVAL_LEXICAL_MIN_SCORE`: lexical acceptance gates, defaulting
   to `0.18` and `0.11` respectively.
-- `E3SM_ASSIST_RETRIEVAL_LEXICAL_WEIGHT` and
-  `E3SM_ASSIST_RETRIEVAL_SEMANTIC_WEIGHT`: non-negative hybrid weights, each
+- `RETRIEVAL_LEXICAL_WEIGHT` and `RETRIEVAL_SEMANTIC_WEIGHT`: non-negative hybrid weights, each
   defaulting to `0.5`. Hybrid ranking uses their normalized weighted average of
   lexical relevance (clamped lexical score) and non-negative semantic cosine
   similarity. Set at least one weight above zero.
@@ -102,10 +98,10 @@ Common local settings are:
 For example, enable semantic retrieval locally with:
 
 ```bash
-E3SM_ASSIST_RETRIEVAL_MODE=semantic \
-E3SM_ASSIST_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \
-E3SM_ASSIST_RETRIEVAL_SEMANTIC_MIN_SCORE=0.7 \
-uv run --all-packages --directory backend uvicorn e3sm_assist.app:app --reload
+RETRIEVAL_MODE=semantic \
+EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \
+RETRIEVAL_SEMANTIC_MIN_SCORE=0.7 \
+uv run --all-packages --directory backend uvicorn e3sm_ai_platform.api.app:app --reload
 ```
 
 Semantic and hybrid candidates still require official source authority and are
@@ -130,16 +126,16 @@ uv run --all-packages ruff check backend evaluation
 uv run --all-packages ty check
 ```
 
-The Makefile also provides current mypy targets:
+The Makefile also provides ty type-check targets:
 
 ```bash
 make backend-typecheck
 make evaluation-typecheck
 ```
 
-`make check` currently runs backend tests, backend Ruff lint, backend mypy,
-evaluation tests, evaluation Ruff lint, and evaluation mypy. It does not run the
-frontend checks or `ty check`.
+`make check` currently runs backend tests, backend Ruff lint, backend ty,
+evaluation tests, evaluation Ruff lint, and evaluation ty. It does not run the
+frontend checks.
 
 Optional full pre-commit validation from repository guidance:
 

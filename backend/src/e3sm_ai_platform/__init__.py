@@ -1,4 +1,4 @@
-"""E3SM-ASSIST backend vertical slice."""
+"""E3SM AI Platform backend package."""
 
 __all__ = ["__version__"]
 

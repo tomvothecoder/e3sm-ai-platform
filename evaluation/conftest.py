@@ -1,4 +1,4 @@
-"""Pytest fixtures for the external E3SM-ASSIST evaluation contract."""
+"""Pytest fixtures for the external E3SM Compass evaluation contract."""
 
 from __future__ import annotations
 
@@ -20,20 +20,20 @@ def evaluation_cases() -> list[dict[str, object]]:
 @pytest.fixture(scope="session")
 def evaluate() -> Callable[[str], Mapping[str, object]]:
     """Load the configured backend evaluator exactly once per pytest session."""
-    target = os.getenv("E3SM_ASSIST_EVALUATOR")
+    target = os.getenv("E3SM_COMPASS_EVALUATOR")
     if not target:
         pytest.skip(
-            "Set E3SM_ASSIST_EVALUATOR=package.module:callable to run integration evaluation"
+            "Set E3SM_COMPASS_EVALUATOR=package.module:callable to run integration evaluation"
         )
 
     try:
         module_name, callable_name = target.split(":", 1)
         evaluator = getattr(importlib.import_module(module_name), callable_name)
     except (ImportError, AttributeError, ValueError) as exc:
-        pytest.fail(f"Unable to load E3SM_ASSIST_EVALUATOR={target!r}: {exc}")
+        pytest.fail(f"Unable to load E3SM_COMPASS_EVALUATOR={target!r}: {exc}")
 
     if not callable(evaluator):
-        pytest.fail("E3SM_ASSIST_EVALUATOR must name a callable accepting one question string")
+        pytest.fail("E3SM_COMPASS_EVALUATOR must name a callable accepting one question string")
     return cast(Callable[[str], Mapping[str, object]], evaluator)
 
 

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from e3sm_assist.curation import (
+from e3sm_ai_platform.knowledge.curation import (
     CurationValidationError,
     capture,
     refresh,

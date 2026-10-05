@@ -1,6 +1,7 @@
-from e3sm_assist.ingest import chunk_corpus, load_corpus
-from e3sm_assist.models import DocumentChunk, SourceMetadata
-from e3sm_assist.retrieval import (
+from e3sm_ai_platform.domain.models import DocumentChunk, SourceMetadata
+from e3sm_ai_platform.infrastructure.settings import Settings
+from e3sm_ai_platform.knowledge.corpus import chunk_corpus, load_corpus
+from e3sm_ai_platform.knowledge.retrieval import (
     InMemoryVectorStore,
     LexicalEmbedder,
     LlamaIndexVectorStore,
@@ -8,7 +9,6 @@ from e3sm_assist.retrieval import (
     document_chunk_to_text_node,
     tokenize,
 )
-from e3sm_assist.settings import Settings
 
 
 def _store() -> InMemoryVectorStore:
@@ -60,7 +60,7 @@ def test_accepted_retrieval_allows_legitimate_api_documentation_wording() -> Non
 
 
 def test_token_boundary_matching_does_not_match_substrings() -> None:
-    from e3sm_assist.retrieval import contains_token_phrase
+    from e3sm_ai_platform.knowledge.retrieval import contains_token_phrase
 
     assert contains_token_phrase("EAM and EAMxx are separate", "eam") is True
     assert contains_token_phrase("EAMxx is accelerated", "eam") is False

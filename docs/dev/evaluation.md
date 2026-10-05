@@ -1,8 +1,8 @@
 # Evaluation guide
 
 The `evaluation/` package is an independent deterministic pytest suite for the
-E3SM-ASSIST response contract. It does not import a backend by default. Instead,
-pytest loads an adapter named by `E3SM_ASSIST_EVALUATOR` once per session and
+E3SM Compass response contract. It does not import a backend by default. Instead,
+pytest loads an adapter named by `E3SM_COMPASS_EVALUATOR` once per session and
 calls it for each fixture question.
 
 ## Running evaluation
@@ -10,7 +10,7 @@ calls it for each fixture question.
 Run the evaluation against the packaged backend adapter from the repository root:
 
 ```bash
-E3SM_ASSIST_EVALUATOR=e3sm_assist.evaluation_adapter:evaluate \
+E3SM_COMPASS_EVALUATOR=e3sm_ai_platform.evaluation:evaluate \
   uv run --all-packages pytest evaluation
 ```
 
@@ -21,7 +21,7 @@ make evaluation-test
 ```
 
 `--all-packages` is required so the evaluation and backend workspace packages are
-available together. If `E3SM_ASSIST_EVALUATOR` is not set, the tests skip rather
+available together. If `E3SM_COMPASS_EVALUATOR` is not set, the tests skip rather
 than guessing a backend package path.
 
 ## Adapter contract
@@ -75,7 +75,7 @@ They are designed to run without live LLM or web requests.
 
 ## Backend packaged adapter
 
-The backend ships `e3sm_assist.evaluation_adapter:evaluate`. It initializes the
+The backend ships `e3sm_ai_platform.evaluation:evaluate`. It initializes the
 application service once per process, sends each fixture question through the
 same query service, and returns only the stable evaluation mapping fields.
 
@@ -89,4 +89,4 @@ make evaluation-lint
 make evaluation-typecheck
 ```
 
-For repository-level Ruff, ty, and mypy guidance, see [setup.md](setup.md).
+For repository-level Ruff and ty guidance, see [setup.md](setup.md).

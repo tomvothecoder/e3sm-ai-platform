@@ -14,9 +14,9 @@ from llama_index.core.embeddings import BaseEmbedding
 from llama_index.core.schema import MetadataMode, NodeWithScore, TextNode
 from pydantic import PrivateAttr
 
-from e3sm_assist.interfaces import Embedder, EmbeddingVector
-from e3sm_assist.models import DocumentChunk, Evidence, SourceMetadata
-from e3sm_assist.settings import Settings
+from e3sm_ai_platform.domain.models import DocumentChunk, Evidence, SourceMetadata
+from e3sm_ai_platform.infrastructure.settings import Settings
+from e3sm_ai_platform.knowledge.interfaces import Embedder, EmbeddingVector
 
 TOKEN_RE = re.compile(r"[a-z0-9][a-z0-9_+.-]*")
 TOKEN_BOUNDARY_TEMPLATE = r"(?<![a-z0-9_+.-]){phrase}(?![a-z0-9_+.-])"

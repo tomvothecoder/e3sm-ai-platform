@@ -1,1 +1,1 @@
-"""Deterministic E3SM-ASSIST evaluation package."""
+"""Deterministic E3SM Compass evaluation package."""

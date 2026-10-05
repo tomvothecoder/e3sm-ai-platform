@@ -1,5 +1,10 @@
-from e3sm_assist.evaluation_adapter import evaluate
-from e3sm_assist.ingest import load_corpus
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+from e3sm_ai_platform.evaluation import evaluate
+from e3sm_ai_platform.knowledge.corpus import load_corpus
 
 FIXTURE_CASES = [
     (
@@ -92,6 +97,25 @@ FIXTURE_CASES = [
         set(),
     ),
 ]
+
+
+def test_evaluator_import_does_not_load_http_wiring() -> None:
+    backend_source = Path(__file__).parents[1] / "src"
+    environment = {**os.environ, "PYTHONPATH": str(backend_source)}
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import e3sm_ai_platform.evaluation, sys; "
+            "print('e3sm_ai_platform.api.app' in sys.modules)",
+        ],
+        check=True,
+        capture_output=True,
+        env=environment,
+        text=True,
+    )
+
+    assert result.stdout.strip() == "False"
 
 
 def test_evaluation_fixture_semantics() -> None:

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from e3sm_assist.models import Evidence, RouteName
-from e3sm_assist.retrieval import contains_token_phrase
+from e3sm_ai_platform.domain.models import Evidence, RouteName
+from e3sm_ai_platform.knowledge.retrieval import contains_token_phrase
 
 WEB_TERMS = {
     "breaking",

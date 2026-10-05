@@ -36,14 +36,14 @@ Run these from the repository root. Paths below are operator-local examples.
 
 ```bash
 # Validate the checked-in human-owned source scope (command planned for Phase 2).
-uv run --package e3sm-assist-backend python backend/scripts/corpus.py validate-sources corpus/sources.json
+uv run --package e3sm-ai-platform-backend python backend/scripts/corpus.py validate-sources corpus/sources.json
 
 # Capture selected local files named by a pinned local capture manifest.
-uv run --package e3sm-assist-backend python backend/scripts/corpus.py capture /path/to/capture-manifest.json /path/to/current-corpus
+uv run --package e3sm-ai-platform-backend python backend/scripts/corpus.py capture /path/to/capture-manifest.json /path/to/current-corpus
 
 # Build a separate offline candidate from a current snapshot and local manifest.
-uv run --package e3sm-assist-backend python backend/scripts/corpus.py refresh /path/to/current-corpus /path/to/capture-manifest.json /path/to/candidate-corpus
+uv run --package e3sm-ai-platform-backend python backend/scripts/corpus.py refresh /path/to/current-corpus /path/to/capture-manifest.json /path/to/candidate-corpus
 
 # Validate corpus artifacts and require hash-bound reviewer approval.
-uv run --package e3sm-assist-backend python backend/scripts/corpus.py validate /path/to/candidate-corpus --require-approved
+uv run --package e3sm-ai-platform-backend python backend/scripts/corpus.py validate /path/to/candidate-corpus --require-approved
 ```

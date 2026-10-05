@@ -1,0 +1,58 @@
+name: Bug Report
+description: File a bug report to help improve E3SM AI Platform and E3SM Compass.
+title: "[Bug]: "
+labels: ["type: bug"]
+assignees: []
+
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe what you were trying to do and what went wrong.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: List the smallest set of steps that reproduces the problem.
+      placeholder: |
+        1. ...
+        2. ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: Describe what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, Python, uv, Node.js, browser, and relevant configuration details.
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs-or-screenshots
+    attributes:
+      label: Relevant logs, code, or screenshots
+      description: Remove secrets, credentials, and sensitive prompts before sharing.
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra-context
+    attributes:
+      label: Additional context
+      description: Add any other useful details, related issues, or links.
+    validations:
+      required: false

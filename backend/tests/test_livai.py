@@ -15,8 +15,21 @@ from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
-from e3sm_assist.app import AssistService
-from e3sm_assist.livai import (
+from e3sm_ai_platform.application.service import CompassService
+from e3sm_ai_platform.domain.models import (
+    Evidence,
+    GenerationMode,
+    QueryRequest,
+    RouteName,
+    SourceMetadata,
+)
+from e3sm_ai_platform.infrastructure.settings import (
+    DEFAULT_LIVAI_BASE_URL,
+    DEFAULT_LIVAI_MODEL,
+    Settings,
+    load_settings,
+)
+from e3sm_ai_platform.integrations.livai import (
     MAX_EVIDENCE_PROMPT_CHARS,
     SYSTEM_PROMPT,
     LivAIChatClient,
@@ -24,13 +37,6 @@ from e3sm_assist.livai import (
     LivAIProviderError,
     build_generator,
     build_livai_messages,
-)
-from e3sm_assist.models import Evidence, GenerationMode, QueryRequest, RouteName, SourceMetadata
-from e3sm_assist.settings import (
-    DEFAULT_LIVAI_BASE_URL,
-    DEFAULT_LIVAI_MODEL,
-    Settings,
-    load_settings,
 )
 
 
@@ -54,11 +60,11 @@ class FakeChatClient:
 @pytest.fixture
 def clear_livai_env(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     for key in [
-        "ASSISTANT_GENERATOR",
-        "ASSISTANT_LIVAI_API_KEY",
-        "ASSISTANT_LIVAI_MODEL",
-        "ASSISTANT_LIVAI_BASE_URL",
-        "E3SM_ASSIST_CORS_ALLOW_ORIGINS",
+        "INFERENCE_BACKEND",
+        "LIVAI_API_KEY",
+        "LIVAI_MODEL",
+        "LIVAI_BASE_URL",
+        "CORS_ALLOW_ORIGINS",
     ]:
         monkeypatch.delenv(key, raising=False)
     yield
@@ -103,10 +109,10 @@ def test_livai_enablement_requires_flag_and_key(
     clear_livai_env: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("ASSISTANT_GENERATOR", "livai")
+    monkeypatch.setenv("INFERENCE_BACKEND", "livai")
     assert build_generator(load_settings(load_dotenv_file=False)) is None
 
-    monkeypatch.setenv("ASSISTANT_LIVAI_API_KEY", "test-key")
+    monkeypatch.setenv("LIVAI_API_KEY", "test-key")
     generator = build_generator(load_settings(load_dotenv_file=False))
 
     assert generator is not None
@@ -267,7 +273,7 @@ def test_livai_fallback_debug_never_exposes_secret_or_endpoint() -> None:
 
 
 def test_service_uses_deterministic_default_without_livai_key(clear_livai_env: None) -> None:
-    service = AssistService(settings=Settings(assistant_generator="livai", livai_api_key=None))
+    service = CompassService(settings=Settings(assistant_generator="livai", livai_api_key=None))
 
     response = service.query(QueryRequest(question="How do I choose an E3SM compset?"))
 

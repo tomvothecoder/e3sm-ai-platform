@@ -1,0 +1,43 @@
+name: DevOps Task
+description: Track CI, deployment, observability, or developer-environment work.
+title: "[DevOps]: "
+labels: ["type: devops"]
+assignees: []
+
+body:
+  - type: textarea
+    id: details
+    attributes:
+      label: Task details
+      description: Describe the goal, requirements, and relevant context.
+      placeholder: What needs to be done, and why is it important?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Proposed steps
+      description: List implementation or operational steps when known.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation and rollback
+      description: Describe how to verify the work and any rollback considerations.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add related issues, deployment constraints, or reference links.
+    validations:
+      required: false

@@ -35,7 +35,7 @@ jobs:
           python-version: "3.13"
           enable-cache: true
       - run: uv sync --all-packages --all-groups
-      - run: E3SM_ASSIST_EVALUATOR=e3sm_assist.evaluation_adapter:evaluate uv run --all-packages pytest evaluation
+      - run: E3SM_COMPASS_EVALUATOR=e3sm_ai_platform.evaluation:evaluate uv run --all-packages pytest evaluation
 
   pre-commit:
     name: Pre-commit checks

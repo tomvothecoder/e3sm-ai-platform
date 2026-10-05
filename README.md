@@ -1,28 +1,27 @@
 # E3SM AI Platform
 
-E3SM AI Platform is a provider-independent prototype for **E3SM-ASSIST**: a chat application that answers E3SM questions from a curated local documentation corpus. It prioritizes traceable evidence, citations, and explicit insufficient-evidence responses over unsupported answers. It is a prototype, not a complete E3SM documentation service or production operational assistant.
+E3SM AI Platform is the provider-independent backend prototype for **E3SM Compass**, a chat application that answers E3SM questions using a curated documentation corpus.
 
-## Current features
+Answers include citations and source provenance. When the available evidence is insufficient, the application explicitly says so.
 
-- FastAPI `POST /query` service with deterministic routing, configurable lexical, semantic, or hybrid retrieval, answer generation, citations, provenance, and debug information.
-- Curated 31-entry corpus spanning the E3SM User Guide, Running E3SM, EAM, EAMxx, ELM, Diagnostics, and E3SM-Unified.
-- React, TypeScript, and Vite chat UI with loading/error states, citations, expandable evidence, and route/source debugging.
-- Deterministic evaluation fixtures and provider-independent interfaces for retrieval, generation, web, and operational-source extensions.
-- Optional backend-only LivAI generation for curated-evidence answers; deterministic generation is the default and fallback.
+> [!NOTE]
+> This prototype is actively evolving as project needs and evaluation findings inform its scope and design. It is not yet a complete E3SM documentation service or a production operational assistant.
 
-## Prerequisites
+## Quickstart
+
+### Prerequisites
 
 - Python 3.13
 - [uv](https://docs.astral.sh/uv/)
 - Node.js 22 and npm
 
-## Quickstart
+### Start the application
 
-From the repository root, install dependencies and start the API:
+From the repository root, install dependencies, configure the backend environment, and start the API:
 
 ```bash
-uv sync --all-packages --all-groups
-make frontend-install
+make sync
+make backend-env
 make backend-start
 ```
 
@@ -32,7 +31,9 @@ In a second terminal, start the web client:
 make frontend-start
 ```
 
-Send a request to the API:
+Open the local URL printed by Vite.
+
+To query the API directly:
 
 ```bash
 curl -X POST http://localhost:8000/query \
@@ -40,81 +41,118 @@ curl -X POST http://localhost:8000/query \
   -d '{"question":"How do I choose an E3SM compset?"}'
 ```
 
-The default configuration uses local curated-corpus data; it does not require a proprietary service or network request to run or test.
+After dependencies are installed, the default configuration runs and tests locally without proprietary services or external network requests. It uses the packaged corpus, lexical retrieval, and deterministic response generation.
 
-## Standard commands
+`make backend-env` creates `backend/.env` from `backend/.env.example` when it
+does not already exist. It never overwrites an existing local configuration.
 
-```bash
-# Run backend, evaluation, lint, and type checks
-make check
+See [Developer setup](docs/dev/setup.md) for optional retrieval modes and LivAI configuration.
 
-# Run frontend checks and production build
-make frontend-test frontend-lint frontend-typecheck frontend-build
+## Features
 
-# Run individual services
-make backend-start
-make frontend-start
+### E3SM Compass frontend
 
-# Manage the optional local observability stack
-make observability-up
-make observability-status
-make observability-logs
-make observability-down
+- **Chat interface:** React/TypeScript UI with loading and error states.
+- **Answer inspection:** Citations, expandable evidence, and route/source debugging.
+
+### Backend and inference
+
+- **Query API:** FastAPI `POST /query` endpoint with deterministic routing.
+- **Response generation:** Deterministic generation by default and as a fallback, with optional backend-only LivAI integration through PydanticAI.
+- **Insufficient-evidence handling:** Explicit responses when the available evidence cannot support an answer.
+- **Extensible interfaces:** Provider-independent retrieval and generation, with extension points for future web and operational connectors. Live connectors are not bundled.
+
+### Knowledge and retrieval
+
+- **Curated corpus:** 31 entries covering the E3SM User Guide, Running E3SM, EAM, EAMxx, ELM, Diagnostics, and E3SM-Unified.
+- **Retrieval modes:** Deterministic lexical retrieval by default, with optional semantic and hybrid modes using LlamaIndex and Hugging Face embeddings.
+- **Evidence checks:** Relevance filtering, source provenance, and citations.
+
+### Evaluation and observability
+
+- **Behavior validation:** Deterministic pytest fixtures check routing, evidence, and citations.
+- **Request monitoring:** Structured JSON logs, request IDs, and OpenTelemetry tracing with privacy-preserving defaults.
+- **Local trace inspection:** Optional OpenTelemetry Collector and Jaeger stack.
+
+## How it works
+
+The frontend sends questions to `POST /query`. During development, Vite proxies these requests to the backend.
+
+```mermaid
+flowchart TD
+    UI["E3SM Compass frontend"] -->|POST /query| API["FastAPI backend"]
+    API --> Router["Deterministic routing"]
+    Router --> Retrieval["Retrieval and evidence checks"]
+    Corpus["Local curated corpus"] --> Retrieval
+    Router --> Insufficient["Insufficient-evidence response"]
+    Retrieval -->|Accepted evidence| Generation["Response generation"]
+    Retrieval -->|Insufficient evidence| Insufficient
+    Generation -. Optional .-> LivAI["LivAI via PydanticAI"]
+    Generation --> Answer["Answer with citations and provenance"]
+    Answer --> UI
+    Insufficient --> UI
 ```
 
-## Architecture and request flow
+For supported documentation questions, the backend:
 
-`frontend/` sends a question to the FastAPI backend's `POST /query` endpoint (the Vite development server proxies relative `/query` requests). The backend deterministically selects a route, retrieves relevant curated evidence when supported, generates an evidence-constrained response, and returns the answer with citations, provenance, route metadata, and debug information. Ingestion is an explicit process: source records are normalized, chunked, embedded through an abstraction, and stored for retrieval; the application does not fetch documentation at request time.
+1. Retrieves and ranks passages from the curated corpus.
+2. Applies relevance and coherence checks to select acceptable evidence.
+3. Generates a response using the deterministic generator or optional LivAI integration.
+4. Returns the answer with citations, provenance, and route/debug metadata.
 
-Available routes are curated documentation, opt-in web-search fallback, future operational/tool sources, and explicit insufficient evidence. Web and operational connectors are extension points and are not enabled by default.
+Unsupported questions or questions without adequate evidence receive an explicit insufficient-evidence response.
 
-### Answer process
+The default `lexical` mode does not initialize or download an embedding model. Optional `semantic` mode uses dense embeddings; `hybrid` mode combines lexical and semantic relevance.
 
-E3SM-ASSIST uses retrieval-augmented generation (RAG) to:
+Ingestion runs separately from queries: source records are normalized, chunked, and stored for retrieval, with embeddings handled through an abstraction. The application does not fetch documentation at request time.
 
-1. Search the curated E3SM documentation corpus for relevant passages.
-2. Rank candidates with the configured retrieval mode. Offline-safe `lexical`
-   mode uses lexical similarity, query-term coverage, metadata matches, and
-   E3SM-specific phrase boosts. Opt-in `semantic` mode uses Hugging Face dense
-   embeddings, while `hybrid` mode deterministically combines lexical relevance
-   and semantic similarity.
-3. Filter results to official evidence that clears the configured lexical or
-   semantic relevance gates and is coherent with the accepted set. Unsupported
-   requests are rejected regardless of retrieval mode.
-4. Pass accepted evidence to the deterministic generator or the optional LLM,
-   then produce a cited answer. If no evidence passes these safeguards, return an
-   explicit insufficient-evidence response.
+See [Architecture](docs/dev/architecture.md) for routing, ingestion, retrieval scoring, and evidence thresholds.
 
-Lexical mode is the default and does not initialize or download an embedding
-model. See [developer setup](docs/dev/setup.md) and
-[architecture](docs/dev/architecture.md) for retrieval configuration, scoring,
-and threshold details.
+## Development commands
+
+| Task                                                                 | Command                                                              |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Synchronize all Python and frontend dependencies                     | `make sync`                                                          |
+| Create `backend/.env` from the example when absent                   | `make backend-env`                                                   |
+| Synchronize backend Python dependencies only                         | `make backend-sync`                                                  |
+| Synchronize frontend dependencies only                               | `make frontend-sync`                                                 |
+| Run backend and evaluation tests, lint, and type checks              | `make check`                                                         |
+| Run frontend tests, lint, type checks, and production build          | `make frontend-test frontend-lint frontend-typecheck frontend-build` |
+| Start the API                                                        | `make backend-start`                                                 |
+| Start the web client                                                 | `make frontend-start`                                                |
+| Remove generated builds, retrieval data, caches, and Python bytecode | `make clean`                                                         |
+| Start the local tracing stack                                        | `make observability-up`                                              |
+| Check tracing stack status                                           | `make observability-status`                                          |
+| View tracing stack logs                                              | `make observability-logs`                                            |
+| Stop the tracing stack                                               | `make observability-down`                                            |
+
+The optional tracing stack uses Docker Compose. See [Observability](docs/dev/observability.md) for setup.
 
 ## Project layout
 
-- `backend/` — FastAPI service, ingestion, retrieval, routing, generation, and integration interfaces.
-- `frontend/` — React/Vite chat client.
-- `evaluation/` — deterministic question fixtures and scoring checks.
-- `deploy/observability/` — local development Collector and Jaeger configuration.
+| Directory               | Contents                                                                               |
+| ----------------------- | -------------------------------------------------------------------------------------- |
+| `backend/`              | FastAPI service, ingestion, retrieval, routing, generation, and integration interfaces |
+| `frontend/`             | React, TypeScript, and Vite chat client                                                |
+| `evaluation/`           | Deterministic question fixtures and scoring checks                                     |
+| `deploy/observability/` | Local OpenTelemetry Collector and Jaeger configuration                                 |
+| `docs/`                 | User and developer documentation, prototype status, and roadmap                        |
 
 ## Limitations
 
-- The prototype corpus is small and is not a complete substitute for current E3SM documentation.
-- Retrieval quality is limited by corpus coverage, chunking, and the local embedding implementation.
-- Web and operational integrations have no bundled credentials or live production implementation.
-- There is no authentication, persistent conversation history, or access control.
-- Optional LivAI requires backend-only secret provisioning; do not put credentials in the frontend or commit them. See the setup documentation below.
+- The corpus is small and may not reflect current E3SM documentation. Answer quality depends on coverage, chunking, and retrieval configuration.
+- Web and operational connectors are extension points without bundled live production implementations.
+- Authentication, access control, and persistent conversation history are not implemented.
+- Optional LivAI requires backend-only credentials. Never place secrets in the frontend or commit them. See [Developer setup](docs/dev/setup.md).
 
-## Detailed documentation
+## Documentation
 
 - [Documentation index](docs/README.md)
-- [User usage guide](docs/user/usage.md)
+- [Usage guide](docs/user/usage.md)
 - [Developer setup](docs/dev/setup.md)
 - [Architecture](docs/dev/architecture.md)
 - [Evaluation](docs/dev/evaluation.md)
-- [Observability](docs/dev/observability.md) — includes the optional local tracing workflow.
-- [Corpus curation](docs/dev/corpus-curation.md) — approved source scope and offline curation workflow.
+- [Observability](docs/dev/observability.md)
+- [Corpus curation](docs/dev/corpus-curation.md)
 - [Prototype status](docs/dev/prototype-status.md)
 - [Roadmap](docs/roadmap.md)
-
-For optional LivAI configuration, use the backend-only guidance in the [developer setup](docs/dev/setup.md). For tracing, use the [observability guide](docs/dev/observability.md).

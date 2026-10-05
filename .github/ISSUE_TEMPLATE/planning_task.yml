@@ -1,0 +1,48 @@
+name: Planning Task
+description: Track project-management, research, or planning work.
+title: "[Planning]: "
+labels: ["type: planning"]
+assignees: []
+
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: Briefly describe the planning task.
+      placeholder: Define project milestones
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Describe objectives, stakeholders, scope, and relevant context.
+    validations:
+      required: false
+
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Deliverables
+      description: List expected outcomes or artifacts.
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and blockers
+      description: List prerequisites, risks, and known blockers.
+    validations:
+      required: false
+
+  - type: input
+    id: due-date
+    attributes:
+      label: Target date
+      description: Provide a target date when applicable.
+      placeholder: YYYY-MM-DD
+    validations:
+      required: false

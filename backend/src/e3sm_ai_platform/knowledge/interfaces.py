@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from typing import Protocol
 
-from e3sm_assist.models import DocumentChunk, Evidence
+from e3sm_ai_platform.domain.models import DocumentChunk, Evidence
 
 EmbeddingVector = dict[str, float]
 

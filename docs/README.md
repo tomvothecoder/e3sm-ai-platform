@@ -1,7 +1,7 @@
 # E3SM AI Platform documentation
 
 This directory is the documentation entry point for the current E3SM AI Platform
-prototype, focused on E3SM-ASSIST.
+prototype, focused on E3SM Compass.
 
 ## Canonical guides
 
@@ -28,7 +28,7 @@ prototype, focused on E3SM-ASSIST.
 
 ## Repository areas
 
-- `backend/`: FastAPI E3SM-ASSIST service and packaged evaluator adapter.
+- `backend/`: FastAPI E3SM Compass service and packaged evaluator adapter.
 - `frontend/`: React, TypeScript, and Vite chat UI.
 - `evaluation/`: independent deterministic pytest suite for response-contract
   checks.
